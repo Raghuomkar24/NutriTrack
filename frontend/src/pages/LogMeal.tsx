@@ -165,6 +165,7 @@ const LogMeal: React.FC = () => {
         scanner.clear().catch(e => console.error(e));
       };
     }
+    return undefined;
   }, [showScanner]);
 
   // Photo recognition simulation
