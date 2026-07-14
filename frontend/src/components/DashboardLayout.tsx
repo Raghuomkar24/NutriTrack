@@ -27,17 +27,62 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         const res = await api.get('/api/notifications');
         // If the notifications API is not fully set up or seeded yet, use a mock list
         setNotifications(res.data && res.data.length > 0 ? res.data : [
-          { id: 1, message: "Time for dinner! Keep up the good work.", isRead: false },
-          { id: 2, message: "Remember to drink water.", isRead: true }
+          { id: 1, message: "Welcome to NutriTrack Pro! Keep up your healthy habits.", isRead: false }
         ]);
       } catch (err) {
         setNotifications([
-          { id: 1, message: "Time for dinner! Keep up the good work.", isRead: false },
-          { id: 2, message: "Remember to drink water.", isRead: true }
+          { id: 1, message: "Welcome to NutriTrack Pro! Keep up your healthy habits.", isRead: false }
         ]);
       }
     };
     fetchNotifications();
+
+    const checkReminders = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const timeKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${hours}`;
+
+      const lastWaterReminder = localStorage.getItem('lastWaterReminder');
+      const lastFoodReminder = localStorage.getItem('lastFoodReminder');
+
+      // Drink water reminder (e.g., every 2 hours from 8 AM to 8 PM)
+      if (hours >= 8 && hours <= 20 && hours % 2 === 0 && lastWaterReminder !== timeKey) {
+        setNotifications(prev => [{
+          id: Date.now(),
+          message: "Time to hydrate! Drink a glass of water. 💧",
+          isRead: false
+        }, ...prev]);
+        localStorage.setItem('lastWaterReminder', timeKey);
+        setShowNotifications(true);
+      }
+
+      // Eat food reminders (Breakfast: 8 AM, Lunch: 1 PM, Dinner: 7 PM)
+      let mealMsg = null;
+      if (hours === 8 && lastFoodReminder !== `breakfast-${timeKey}`) {
+        mealMsg = "Time for Breakfast! Start your day with a healthy meal. 🍳";
+        localStorage.setItem('lastFoodReminder', `breakfast-${timeKey}`);
+      } else if (hours === 13 && lastFoodReminder !== `lunch-${timeKey}`) {
+        mealMsg = "Time for Lunch! Fuel your afternoon. 🥗";
+        localStorage.setItem('lastFoodReminder', `lunch-${timeKey}`);
+      } else if (hours === 19 && lastFoodReminder !== `dinner-${timeKey}`) {
+        mealMsg = "Time for Dinner! Keep it light and healthy. 🍲";
+        localStorage.setItem('lastFoodReminder', `dinner-${timeKey}`);
+      }
+
+      if (mealMsg) {
+        setNotifications(prev => [{
+          id: Date.now() + 1,
+          message: mealMsg,
+          isRead: false
+        }, ...prev]);
+        setShowNotifications(true);
+      }
+    };
+
+    checkReminders();
+    const interval = setInterval(checkReminders, 60000); // Check every minute
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleLogout = () => {
