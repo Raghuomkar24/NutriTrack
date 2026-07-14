@@ -5,6 +5,7 @@ import {
   Dumbbell, MessageSquare, BookOpen, LogOut, Menu, X, Bell, Shield 
 } from 'lucide-react';
 import api from '../api';
+import Toast from './Toast';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [toastMessage, setToastMessage] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -47,13 +49,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
       // Drink water reminder (e.g., every 2 hours from 8 AM to 8 PM)
       if (hours >= 8 && hours <= 20 && hours % 2 === 0 && lastWaterReminder !== timeKey) {
-        setNotifications(prev => [{
-          id: Date.now(),
-          message: "Time to hydrate! Drink a glass of water. 💧",
-          isRead: false
-        }, ...prev]);
+        const msg = "Time to hydrate! Drink a glass of water. 💧";
+        setNotifications(prev => [{ id: Date.now(), message: msg, isRead: false }, ...prev]);
         localStorage.setItem('lastWaterReminder', timeKey);
         setShowNotifications(true);
+        setToastMessage({ msg, type: 'info' });
       }
 
       // Eat food reminders (Breakfast: 8 AM, Lunch: 1 PM, Dinner: 7 PM)
@@ -70,12 +70,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       }
 
       if (mealMsg) {
-        setNotifications(prev => [{
-          id: Date.now() + 1,
-          message: mealMsg,
-          isRead: false
-        }, ...prev]);
+        setNotifications(prev => [{ id: Date.now() + 1, message: mealMsg, isRead: false }, ...prev]);
         setShowNotifications(true);
+        setToastMessage({ msg: mealMsg, type: 'success' });
       }
     };
 
@@ -301,6 +298,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         {/* Dynamic page content */}
         {children}
       </main>
+
+      {/* Global Reminders Toast */}
+      {toastMessage && (
+        <Toast 
+          message={toastMessage.msg} 
+          type={toastMessage.type} 
+          onClose={() => setToastMessage(null)} 
+        />
+      )}
     </div>
   );
 };
