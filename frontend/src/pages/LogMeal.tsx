@@ -348,6 +348,8 @@ const LogMeal: React.FC = () => {
                         <input
                           type="number"
                           step="0.1"
+                          min="0.1"
+                          max="50"
                           value={item.quantity}
                           onChange={(e) => handleUpdateQuantity(item.id, parseFloat(e.target.value) || 0)}
                           className="w-16 px-2 py-1 bg-slate-900 border border-slate-800 text-xs rounded text-center text-slate-100 focus:outline-none focus:border-green-500"

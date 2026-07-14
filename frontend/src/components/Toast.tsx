@@ -5,9 +5,10 @@ interface ToastProps {
   message: string;
   type: 'success' | 'error' | 'info';
   onClose: () => void;
+  index?: number;
 }
 
-const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+const Toast: React.FC<ToastProps> = ({ message, type, onClose, index = 0 }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -28,7 +29,10 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
   };
 
   return (
-    <div className={`fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-md shadow-2xl transition-all duration-300 animate-fade-in ${colors[type]}`}>
+    <div 
+      className={`fixed right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-md shadow-2xl transition-all duration-300 animate-fade-in ${colors[type]}`}
+      style={{ bottom: `${20 + (index * 60)}px` }}
+    >
       {icons[type]}
       <span className="text-xs font-semibold">{message}</span>
       <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-lg text-slate-450 hover:text-white transition">

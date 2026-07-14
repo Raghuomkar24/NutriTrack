@@ -15,7 +15,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [toastMessage, setToastMessage] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
+  const [toasts, setToasts] = useState<{id: number, msg: string, type: 'info' | 'success'}[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -53,7 +53,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         setNotifications(prev => [{ id: Date.now(), message: msg, isRead: false }, ...prev]);
         localStorage.setItem('lastWaterReminder', timeKey);
         setShowNotifications(true);
-        setToastMessage({ msg, type: 'info' });
+        setToasts(prev => [...prev, { id: Date.now(), msg, type: 'info' }]);
       }
 
       // Eat food reminders (Breakfast: 8 AM, Lunch: 1 PM, Dinner: 7 PM)
@@ -72,7 +72,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       if (mealMsg) {
         setNotifications(prev => [{ id: Date.now() + 1, message: mealMsg, isRead: false }, ...prev]);
         setShowNotifications(true);
-        setToastMessage({ msg: mealMsg, type: 'success' });
+        setToasts(prev => [...prev, { id: Date.now() + 1, msg: mealMsg, type: 'success' }]);
       }
     };
 
@@ -300,13 +300,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </main>
 
       {/* Global Reminders Toast */}
-      {toastMessage && (
+      {toasts.map((toast, index) => (
         <Toast 
-          message={toastMessage.msg} 
-          type={toastMessage.type} 
-          onClose={() => setToastMessage(null)} 
+          key={toast.id}
+          index={index}
+          message={toast.msg} 
+          type={toast.type} 
+          onClose={() => setToasts(prev => prev.filter(t => t.id !== toast.id))} 
         />
-      )}
+      ))}
     </div>
   );
 };

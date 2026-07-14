@@ -64,7 +64,7 @@ const AiCoach: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto flex flex-col h-[calc(100vh-8rem)] pb-4 relative">
+    <div className="max-w-4xl mx-auto flex flex-col h-[calc(100dvh-8rem)] pb-4 relative">
       <div className="mb-4">
         <h2 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
           <span>Ria - AI Coach</span>

@@ -5,20 +5,30 @@ import Toast from '../components/Toast';
 
 const Register: React.FC = () => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    name: '',
-    mobile: '',
-    age: 28,
-    gender: 'MALE',
-    height: 180,
-    weight: 80,
-    targetWeight: 75,
-    activityLevel: 'MODERATELY_ACTIVE',
-    goal: 'LOSE_WEIGHT',
-    diet: 'NON_VEGETARIAN',
+  const [formData, setFormData] = useState(() => {
+    const saved = sessionStorage.getItem('registerFormData');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return {
+      email: '',
+      password: '',
+      name: '',
+      mobile: '',
+      age: 28,
+      gender: 'MALE',
+      height: 180,
+      weight: 80,
+      targetWeight: 75,
+      activityLevel: 'MODERATELY_ACTIVE',
+      goal: 'LOSE_WEIGHT',
+      diet: 'NON_VEGETARIAN',
+    };
   });
+
+  useEffect(() => {
+    sessionStorage.setItem('registerFormData', JSON.stringify(formData));
+  }, [formData]);
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -63,6 +73,7 @@ const Register: React.FC = () => {
         roles: response.data.roles
       }));
       setToast({ message: 'Registration complete! Welcome to NutriTrack Pro.', type: 'success' });
+      sessionStorage.removeItem('registerFormData');
       setTimeout(() => {
         navigate('/dashboard/home');
       }, 1500);
@@ -169,6 +180,8 @@ const Register: React.FC = () => {
                   value={formData.age}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                  min="13"
+                  max="120"
                   required
                 />
               </div>
@@ -196,6 +209,8 @@ const Register: React.FC = () => {
                   value={formData.height}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                  min="50"
+                  max="300"
                   required
                 />
               </div>
@@ -208,6 +223,8 @@ const Register: React.FC = () => {
                   value={formData.weight}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                  min="20"
+                  max="400"
                   required
                 />
               </div>
@@ -220,6 +237,8 @@ const Register: React.FC = () => {
                   value={formData.targetWeight}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                  min="20"
+                  max="400"
                   required
                 />
               </div>
