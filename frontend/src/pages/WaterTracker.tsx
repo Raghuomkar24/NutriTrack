@@ -79,16 +79,26 @@ const WaterTracker: React.FC = () => {
             <span>Target Active</span>
           </div>
 
-          <h3 className="font-extrabold text-base mb-8 text-slate-300">Hydration Progress</h3>
+          <h3 className="font-extrabold text-base mb-8 text-slate-300">Daily Hydration Goal</h3>
 
-          <div className="relative w-40 h-52 bg-slate-900/60 border-4 border-slate-700 rounded-b-[2rem] rounded-t-sm shadow-inner flex items-end justify-center overflow-hidden mb-6">
-            {/* Water Wave Fill */}
-            <div 
-              className="w-full bg-blue-500/80 shadow-[0_0_15px_#3b82f6] transition-all duration-700 ease-out flex items-center justify-center font-bold text-sm text-white" 
-              style={{ height: `${percent}%` }}
-            >
-              {percent > 15 && `${Math.round(percent)}%`}
-            </div>
+          <div className="grid grid-cols-4 md:grid-cols-5 gap-4 mb-6">
+            {Array.from({ length: Math.ceil(waterGoal / 250) }).map((_, idx) => {
+              const isFilled = amountMl >= (idx + 1) * 250;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleUpdateWater(isFilled ? -250 : 250)}
+                  className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 ${
+                    isFilled 
+                      ? 'bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.3)] text-blue-400 border border-blue-500/50 scale-105' 
+                      : 'bg-slate-800/50 text-slate-500 border border-slate-700 hover:bg-slate-800 hover:text-slate-400'
+                  }`}
+                >
+                  <GlassWater size={28} className={isFilled ? 'fill-blue-500/20' : ''} />
+                  <span className="text-[10px] font-bold mt-1">250ml</span>
+                </button>
+              );
+            })}
           </div>
 
           <div className="space-y-1">
@@ -100,33 +110,7 @@ const WaterTracker: React.FC = () => {
         {/* Logging Actions */}
         <div className="space-y-6">
           <div className="glass p-6 rounded-3xl border border-slate-800 space-y-6">
-            <h3 className="font-extrabold text-base text-slate-300">Quick Log Hydration</h3>
-
-            <div className="grid grid-cols-3 gap-4">
-              <button
-                onClick={() => handleUpdateWater(250)}
-                className="p-4 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-2xl flex flex-col items-center gap-2 text-blue-400 transition"
-              >
-                <GlassWater size={24} />
-                <span className="text-xs font-bold">+250 ml</span>
-              </button>
-
-              <button
-                onClick={() => handleUpdateWater(500)}
-                className="p-4 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-2xl flex flex-col items-center gap-2 text-blue-400 transition"
-              >
-                <GlassWater size={28} />
-                <span className="text-xs font-bold">+500 ml</span>
-              </button>
-
-              <button
-                onClick={() => handleUpdateWater(-250)}
-                className="p-4 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-2xl flex flex-col items-center gap-2 text-red-400 transition"
-              >
-                <Minus size={24} />
-                <span className="text-xs font-bold">-250 ml</span>
-              </button>
-            </div>
+            <h3 className="font-extrabold text-base text-slate-300">Quick Log Custom Amount</h3>
 
             <form onSubmit={handleCustomSubmit} className="pt-4 border-t border-slate-800 space-y-3">
               <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Log Custom Amount (ml)</label>

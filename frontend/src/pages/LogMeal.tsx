@@ -14,7 +14,9 @@ interface LoggedItem {
   protein: number;
   carbs: number;
   fat: number;
-  quantityG: number;
+  quantity: number; // The user-facing number (e.g., 2)
+  servingUnit: string; // "Grams", "Small Katori", "Medium Katori", etc.
+  unitMultiplier: number; // How many grams per unit
 }
 
 const LogMeal: React.FC = () => {
@@ -100,16 +102,26 @@ const LogMeal: React.FC = () => {
         protein: food.protein,
         carbs: food.carbohydrates,
         fat: food.fat,
-        quantityG: 100 // Default 100g
+        quantity: 1,
+        servingUnit: 'Medium Katori (150g)',
+        unitMultiplier: 150
       }
     ]);
   };
 
-  const handleUpdateQuantity = (foodId: number, qty: number) => {
+  const handleUpdateQuantity = (foodId: number, qty: number, unit?: string, multiplier?: number) => {
     setSelectedItems(prev =>
-      prev.map(item =>
-        item.id === foodId ? { ...item, quantityG: Math.max(1, qty) } : item
-      )
+      prev.map(item => {
+        if (item.id === foodId) {
+          return { 
+            ...item, 
+            quantity: Math.max(0.1, qty), 
+            servingUnit: unit || item.servingUnit,
+            unitMultiplier: multiplier || item.unitMultiplier
+          };
+        }
+        return item;
+      })
     );
   };
 
@@ -224,7 +236,7 @@ const LogMeal: React.FC = () => {
         mealType,
         items: selectedItems.map(item => ({
           foodId: item.id,
-          quantityG: item.quantityG
+          quantityG: item.quantity * item.unitMultiplier
         }))
       };
       await api.post('/api/meals', payload);
@@ -237,7 +249,7 @@ const LogMeal: React.FC = () => {
   // Summarize staged nutrition
   const totalStaged = selectedItems.reduce(
     (acc, item) => {
-      const factor = item.quantityG / 100;
+      const factor = (item.quantity * item.unitMultiplier) / 100;
       return {
         calories: acc.calories + item.calories * factor,
         protein: acc.protein + item.protein * factor,
@@ -320,33 +332,49 @@ const LogMeal: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-center gap-4">
-                      <div className="flex items-center gap-2 w-full sm:w-2/3">
+                      <div className="flex items-center gap-2 w-full sm:w-1/2">
                         <Sliders className="text-slate-500 flex-shrink-0" size={14} />
                         <input
                           type="range"
-                          min="1"
-                          max="1000"
-                          value={item.quantityG}
-                          onChange={(e) => handleUpdateQuantity(item.id, parseInt(e.target.value))}
+                          min="0.5"
+                          max="10"
+                          step="0.5"
+                          value={item.quantity}
+                          onChange={(e) => handleUpdateQuantity(item.id, parseFloat(e.target.value))}
                           className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-green-500"
                         />
                       </div>
-                      <div className="flex items-center justify-end gap-2 w-full sm:w-1/3 text-right">
+                      <div className="flex items-center justify-end gap-2 w-full sm:w-1/2 text-right">
                         <input
                           type="number"
-                          value={item.quantityG}
-                          onChange={(e) => handleUpdateQuantity(item.id, parseInt(e.target.value) || 0)}
-                          className="w-20 px-2 py-1 bg-slate-900 border border-slate-800 text-xs rounded text-center text-slate-100 focus:outline-none focus:border-green-500"
+                          step="0.1"
+                          value={item.quantity}
+                          onChange={(e) => handleUpdateQuantity(item.id, parseFloat(e.target.value) || 0)}
+                          className="w-16 px-2 py-1 bg-slate-900 border border-slate-800 text-xs rounded text-center text-slate-100 focus:outline-none focus:border-green-500"
                         />
-                        <span className="text-xs text-slate-500">grams</span>
+                        <select
+                          value={item.unitMultiplier}
+                          onChange={(e) => {
+                            const option = e.target.options[e.target.selectedIndex];
+                            handleUpdateQuantity(item.id, item.quantity, option.text, parseFloat(e.target.value));
+                          }}
+                          className="px-2 py-1 bg-slate-900 border border-slate-800 text-xs rounded text-slate-100 focus:outline-none focus:border-green-500 max-w-[120px] truncate"
+                        >
+                          <option value="1">Grams</option>
+                          <option value="100">Small Katori</option>
+                          <option value="150">Medium Katori</option>
+                          <option value="200">Large Katori</option>
+                          <option value="250">Bowl</option>
+                          <option value="40">Piece</option>
+                        </select>
                       </div>
                     </div>
 
                     <div className="text-[11px] text-slate-400 pt-1 flex gap-4">
-                      <span>Cal: {Math.round(item.calories * (item.quantityG / 100))}</span>
-                      <span>P: {Math.round(item.protein * (item.quantityG / 100))}g</span>
-                      <span>C: {Math.round(item.carbs * (item.quantityG / 100))}g</span>
-                      <span>F: {Math.round(item.fat * (item.quantityG / 100))}g</span>
+                      <span>Cal: {Math.round(item.calories * ((item.quantity * item.unitMultiplier) / 100))}</span>
+                      <span>P: {Math.round(item.protein * ((item.quantity * item.unitMultiplier) / 100))}g</span>
+                      <span>C: {Math.round(item.carbs * ((item.quantity * item.unitMultiplier) / 100))}g</span>
+                      <span>F: {Math.round(item.fat * ((item.quantity * item.unitMultiplier) / 100))}g</span>
                     </div>
                   </div>
                 ))}

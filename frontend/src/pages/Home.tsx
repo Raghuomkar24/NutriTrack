@@ -157,18 +157,20 @@ const Home: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 w-full pt-4 border-t border-slate-800 text-center">
+          <div className="flex items-center justify-between w-full pt-4 border-t border-slate-800 text-center">
             <div>
-              <p className="text-xs text-slate-500 font-medium">Goal</p>
-              <p className="text-sm font-bold mt-0.5">{Math.round(dailyCaloriesGoal)}</p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Budget</p>
+              <p className="text-sm font-bold mt-1">{Math.round(dailyCaloriesGoal)}</p>
             </div>
+            <div className="text-slate-600 font-bold text-lg">-</div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Food</p>
-              <p className="text-sm font-bold text-green-400 mt-0.5">{Math.round(caloriesConsumed)}</p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Food</p>
+              <p className="text-sm font-bold text-green-400 mt-1">{Math.round(caloriesConsumed)}</p>
             </div>
+            <div className="text-slate-600 font-bold text-lg">+</div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Burned</p>
-              <p className="text-sm font-bold text-orange-400 mt-0.5">{Math.round(caloriesBurned)}</p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Burned</p>
+              <p className="text-sm font-bold text-orange-400 mt-1">{Math.round(caloriesBurned)}</p>
             </div>
           </div>
         </div>
