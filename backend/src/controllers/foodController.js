@@ -5,13 +5,24 @@ exports.getFoods = async (req, res) => {
   try {
     const { q } = req.query;
     if (q) {
-      // 1. Fetch from Open Food Facts
+      // 1. Check local DB first for matches (prioritizing our seeded Indian foods)
+      let localFoods = await Food.find({ name: { $regex: q, $options: 'i' } }).limit(20);
+      
+      // Sort local results to prioritize 'Indian' brand foods to the top
+      localFoods.sort((a, b) => (b.brand === 'Indian' ? 1 : 0) - (a.brand === 'Indian' ? 1 : 0));
+
+      // If we found a good amount of local matches, return them without hitting the external API
+      if (localFoods.length >= 3) {
+        return res.json(localFoods);
+      }
+
+      // 2. Fetch from Open Food Facts if not enough local results
       const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=10`;
       const response = await fetch(url);
       const data = await response.json();
       
       if (data.products && data.products.length > 0) {
-        // 2. Upsert each valid product into local DB
+        // Upsert each valid product into local DB
         for (const p of data.products) {
           if (p.product_name && p.nutriments && p.nutriments['energy-kcal_100g'] !== undefined) {
             await Food.findOneAndUpdate(
@@ -31,9 +42,10 @@ exports.getFoods = async (req, res) => {
         }
       }
       
-      // 3. Query local DB again for the term (which now includes the upserted items)
-      const foods = await Food.find({ name: { $regex: q, $options: 'i' } }).limit(20);
-      return res.json(foods);
+      // 3. Query local DB again and sort Indian foods to top
+      const finalFoods = await Food.find({ name: { $regex: q, $options: 'i' } }).limit(20);
+      finalFoods.sort((a, b) => (b.brand === 'Indian' ? 1 : 0) - (a.brand === 'Indian' ? 1 : 0));
+      return res.json(finalFoods);
     }
     
     // No query, just return recent local foods
