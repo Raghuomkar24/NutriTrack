@@ -1,8 +1,11 @@
 import axios from 'axios';
 
 // Create API instance that utilizes Vite proxy to direct calls to localhost:8080/api
+// Use the environment variable for production, or localhost for local development
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8085';
+
 const api = axios.create({
-  baseURL: '',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
