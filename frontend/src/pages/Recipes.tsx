@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Plus, CheckCircle2, ChevronRight, ShoppingCart, ListChecks, BookOpen, Trash2, X, PlusCircle 
+  Plus, ShoppingCart, ListChecks, Trash2, X 
 } from 'lucide-react';
 import api from '../api';
 

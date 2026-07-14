@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Droplet, Plus, Minus, GlassWater, HelpCircle } from 'lucide-react';
+import { Droplet, Minus, GlassWater, HelpCircle } from 'lucide-react';
 import api from '../api';
 
 const WaterTracker: React.FC = () => {

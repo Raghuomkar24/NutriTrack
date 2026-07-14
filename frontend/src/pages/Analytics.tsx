@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, 
-  Tooltip, BarChart, Bar, Legend, LineChart, Line 
+  Tooltip, BarChart, Bar, Legend, Line 
 } from 'recharts';
-import { Download, Calendar, Activity, ChevronRight } from 'lucide-react';
+import { Download, Activity } from 'lucide-react';
 import api from '../api';
 
 const Analytics: React.FC = () => {

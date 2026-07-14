@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dumbbell, Plus, Trash2, Calendar, Clock, Flame } from 'lucide-react';
+import { Dumbbell, Trash2, Calendar, Clock, Flame } from 'lucide-react';
 import api from '../api';
 
 const ExerciseTracker: React.FC = () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Sparkles, Activity, Apple, ChevronRight } from 'lucide-react';
+import { Sparkles, Activity, Apple, ChevronRight } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
   return (

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip 
 } from 'recharts';
-import { Scale, Plus, Calendar, Activity, TrendingDown } from 'lucide-react';
+import { Scale, Calendar, TrendingDown } from 'lucide-react';
 import api from '../api';
 
 const WeightTracker: React.FC = () => {

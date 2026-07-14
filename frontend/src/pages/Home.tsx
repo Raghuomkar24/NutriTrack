@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Flame, Droplet, Dumbbell, Award, Plus, Trash2, Sparkles, ChevronRight, Download, Utensils 
+  Droplet, Award, Plus, Trash2, Sparkles, ChevronRight, Download, Utensils 
 } from 'lucide-react';
 import { 
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
+  ResponsiveContainer, 
   Tooltip, PieChart, Pie, Cell 
 } from 'recharts';
 import api from '../api';
 
 const Home: React.FC = () => {
   const [summary, setSummary] = useState<any>(null);
-  const [weightHistory, setWeightHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [date] = useState(new Date().toISOString().split('T')[0]); // Today's date yyyy-MM-dd
 
@@ -20,8 +19,6 @@ const Home: React.FC = () => {
       const summaryRes = await api.get(`/api/dashboard/summary?date=${date}`);
       setSummary(summaryRes.data);
 
-      const weightRes = await api.get('/api/weight');
-      setWeightHistory(weightRes.data);
     } catch (err) {
       console.error("Error loading dashboard data", err);
     } finally {
