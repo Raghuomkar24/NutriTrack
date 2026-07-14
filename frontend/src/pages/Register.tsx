@@ -17,6 +17,7 @@ const Register: React.FC = () => {
     targetWeight: 75,
     activityLevel: 'MODERATELY_ACTIVE',
     goal: 'LOSE_WEIGHT',
+    diet: 'NON_VEGETARIAN',
   });
 
   const [error, setError] = useState('');
@@ -251,6 +252,19 @@ const Register: React.FC = () => {
                 <option value="LOSE_WEIGHT" className="bg-slate-900">Lose Weight (-500 kcal deficit)</option>
                 <option value="MAINTAIN" className="bg-slate-900">Maintain Weight</option>
                 <option value="GAIN_MUSCLE" className="bg-slate-900">Gain Muscle (+350 kcal surplus)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Dietary Preference</label>
+              <select
+                name="diet"
+                value={formData.diet}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+              >
+                <option value="NON_VEGETARIAN" className="bg-slate-900">Non-Vegetarian</option>
+                <option value="VEGETARIAN" className="bg-slate-900">Vegetarian</option>
               </select>
             </div>
 

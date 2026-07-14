@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Search, Plus, Trash2, Camera, Scan, Sparkles, X, ChevronRight, CheckCircle2, Sliders 
 } from 'lucide-react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 import api from '../api';
 
 interface LoggedItem {
@@ -128,9 +129,43 @@ const LogMeal: React.FC = () => {
       setShowScanner(false);
       setBarcodeInput('');
     } catch (err) {
-      setScannerError('Barcode not found in USDA / OFF. Try: 045678901234 or 001234567890');
+      setScannerError('Barcode not found in Open Food Facts. Try manual input or another product.');
     }
   };
+
+  // Setup live barcode scanner when modal opens
+  useEffect(() => {
+    if (showScanner) {
+      const scanner = new Html5QrcodeScanner(
+        "reader",
+        { fps: 10, qrbox: { width: 250, height: 100 } },
+        false
+      );
+
+      scanner.render(
+        async (decodedText) => {
+          scanner.clear();
+          setBarcodeInput(decodedText);
+          
+          try {
+            const res = await api.get(`/api/foods/barcode/${decodedText}`);
+            handleAddItem(res.data);
+            setShowScanner(false);
+            setBarcodeInput('');
+          } catch (err) {
+            setScannerError('Barcode not found in Open Food Facts.');
+          }
+        },
+        (error) => {
+          // ignore frequent scan failures
+        }
+      );
+
+      return () => {
+        scanner.clear().catch(e => console.error(e));
+      };
+    }
+  }, [showScanner]);
 
   // Photo recognition simulation
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -428,12 +463,8 @@ const LogMeal: React.FC = () => {
               <button onClick={() => setShowScanner(false)} className="p-1 hover:bg-slate-800 rounded-lg"><X size={18} /></button>
             </div>
 
-            {/* Animation Scan lines */}
-            <div className="relative h-44 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-green-500 shadow-[0_0_10px_#16a34a] animate-bounce"></div>
-              <Scan className="text-slate-700" size={56} />
-              <div className="absolute bottom-3 text-[10px] text-slate-500">Simulating scan environment...</div>
-            </div>
+            {/* Scanner Container */}
+            <div id="reader" className="w-full bg-white text-slate-900 rounded-xl overflow-hidden"></div>
 
             {scannerError && (
               <p className="text-red-400 text-xs text-center font-medium bg-red-500/10 border border-red-500/20 py-2 rounded-xl">{scannerError}</p>

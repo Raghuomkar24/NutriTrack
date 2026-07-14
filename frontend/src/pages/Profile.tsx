@@ -17,7 +17,8 @@ const Profile: React.FC = () => {
     weight: 70.0,
     targetWeight: 65.0,
     activityLevel: 'SEDENTARY',
-    goal: 'MAINTAIN'
+    goal: 'MAINTAIN',
+    diet: 'NON_VEGETARIAN'
   });
 
   const fetchProfile = async () => {
@@ -33,7 +34,8 @@ const Profile: React.FC = () => {
         weight: res.data.weight || 70.0,
         targetWeight: res.data.targetWeight || 65.0,
         activityLevel: res.data.activityLevel || 'SEDENTARY',
-        goal: res.data.goal || 'MAINTAIN'
+        goal: res.data.goal || 'MAINTAIN',
+        diet: res.data.diet || 'NON_VEGETARIAN'
       });
     } catch (err) {
       console.error(err);
@@ -278,6 +280,19 @@ const Profile: React.FC = () => {
                 <option value="LOSE_WEIGHT">Lose Weight (-500 kcal deficit)</option>
                 <option value="MAINTAIN">Maintain Weight</option>
                 <option value="GAIN_MUSCLE">Gain Muscle (+350 kcal surplus)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Dietary Preference</label>
+              <select
+                name="diet"
+                value={formData.diet}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+              >
+                <option value="NON_VEGETARIAN">Non-Vegetarian</option>
+                <option value="VEGETARIAN">Vegetarian</option>
               </select>
             </div>
 
