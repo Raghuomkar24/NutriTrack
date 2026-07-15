@@ -20,6 +20,7 @@ import ExerciseTracker from './pages/ExerciseTracker';
 import AiCoach from './pages/AiCoach';
 import Recipes from './pages/Recipes';
 import Admin from './pages/Admin';
+import Goals from './pages/Goals';
 
 const App: React.FC = () => {
   return (
@@ -47,6 +48,7 @@ const App: React.FC = () => {
                   <Route path="exercise" element={<ExerciseTracker />} />
                   <Route path="ai-coach" element={<AiCoach />} />
                   <Route path="recipes" element={<Recipes />} />
+                  <Route path="goals" element={<Goals />} />
                   
                   {/* Admin Route restricted to ROLE_ADMIN */}
                   <Route 

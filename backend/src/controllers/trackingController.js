@@ -1,6 +1,7 @@
 const { WaterLog, WeightLog, ExerciseLog } = require('../models/Tracking');
 const Meal = require('../models/Meal');
 const User = require('../models/User');
+const Goal = require('../models/Goal');
 
 exports.getWater = async (req, res) => {
   try {
@@ -136,7 +137,9 @@ exports.getExercises = async (req, res) => {
       id: log._id,
       exerciseType: log.exerciseType,
       durationMinutes: log.durationMinutes,
-      caloriesBurned: log.caloriesBurned
+      caloriesBurned: log.caloriesBurned,
+      distanceKm: log.distanceKm,
+      route: log.route
     }));
     
     res.json(formattedLogs);
@@ -147,13 +150,15 @@ exports.getExercises = async (req, res) => {
 
 exports.logExercise = async (req, res) => {
   try {
-    const { date, exerciseType, durationMinutes, caloriesBurned } = req.body;
+    const { date, exerciseType, durationMinutes, caloriesBurned, distanceKm, route } = req.body;
     const log = await ExerciseLog.create({
       user: req.user.id,
       date: new Date(date),
       exerciseType,
       durationMinutes,
-      caloriesBurned
+      caloriesBurned,
+      distanceKm: distanceKm || 0,
+      route: route || []
     });
     res.status(201).json(log);
   } catch (error) {
@@ -166,6 +171,42 @@ exports.deleteExercise = async (req, res) => {
     const { id } = req.params;
     await ExerciseLog.findOneAndDelete({ _id: id, user: req.user.id });
     res.json({ message: 'Exercise deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// --- GOAL ENDPOINTS ---
+
+exports.getGoals = async (req, res) => {
+  try {
+    const goals = await Goal.find({ user: req.user.id }).sort({ createdAt: -1 });
+    res.json(goals);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.createGoal = async (req, res) => {
+  try {
+    const { activityType, targetDistanceKm, timeframe } = req.body;
+    const goal = await Goal.create({
+      user: req.user.id,
+      activityType,
+      targetDistanceKm,
+      timeframe: timeframe || 'DAILY'
+    });
+    res.status(201).json(goal);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.deleteGoal = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Goal.findOneAndDelete({ _id: id, user: req.user.id });
+    res.json({ message: 'Goal deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

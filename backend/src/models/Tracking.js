@@ -19,6 +19,8 @@ const exerciseLogSchema = new mongoose.Schema({
   exerciseType: { type: String, required: true }, // RUNNING, WALKING, GYM, CYCLING, YOGA, SWIMMING
   durationMinutes: { type: Number, required: true },
   caloriesBurned: { type: Number, required: true },
+  distanceKm: { type: Number, default: 0 },
+  route: { type: [[Number]], default: [] } // Array of [lat, lng]
 }, { timestamps: true });
 
 module.exports = {

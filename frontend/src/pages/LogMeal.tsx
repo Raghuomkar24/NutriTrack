@@ -23,6 +23,7 @@ const LogMeal: React.FC = () => {
   const [mealType, setMealType] = useState('BREAKFAST');
   const [date] = useState(new Date().toISOString().split('T')[0]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [favorites, setFavorites] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<LoggedItem[]>([]);
@@ -63,19 +64,29 @@ const LogMeal: React.FC = () => {
     }
   };
 
-  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    if (!query.trim()) {
-      fetchCatalog();
-      return;
-    }
-    try {
-      const res = await api.get(`/api/foods?q=${query}`);
-      setSearchResults(res.data);
-    } catch (err) {
-      console.error(err);
-    }
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 600);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const performSearch = async () => {
+      if (!debouncedQuery.trim()) {
+        fetchCatalog();
+        return;
+      }
+      try {
+        const res = await api.get(`/api/foods?q=${debouncedQuery}`);
+        setSearchResults(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    performSearch();
+  }, [debouncedQuery]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
   const handleToggleFavorite = async (foodId: number) => {
@@ -426,9 +437,9 @@ const LogMeal: React.FC = () => {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={handleSearch}
+                onChange={handleSearchChange}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-xs text-slate-100"
-                placeholder="Search apple, egg, rolled oats..."
+                placeholder="Search global foods (e.g. apple, oats)..."
               />
             </div>
 

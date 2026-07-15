@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, User, Utensils, Droplet, Scale, 
-  Dumbbell, MessageSquare, BookOpen, LogOut, Menu, X, Bell, Shield 
+  Dumbbell, MessageSquare, BookOpen, LogOut, Menu, X, Bell, Shield, Map 
 } from 'lucide-react';
 import api from '../api';
 import Toast from './Toast';
@@ -95,6 +95,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     { name: 'Water Tracker', path: '/dashboard/water', icon: Droplet },
     { name: 'Weight Tracker', path: '/dashboard/weight', icon: Scale },
     { name: 'Exercise', path: '/dashboard/exercise', icon: Dumbbell },
+    { name: 'Active Goals', path: '/dashboard/goals', icon: Map },
     { name: 'AI Coach', path: '/dashboard/ai-coach', icon: MessageSquare },
     { name: 'Recipes & Groceries', path: '/dashboard/recipes', icon: BookOpen },
   ];

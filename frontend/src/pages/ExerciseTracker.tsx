@@ -7,6 +7,7 @@ const ExerciseTracker: React.FC = () => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [exerciseType, setExerciseType] = useState('RUNNING');
   const [durationMinutes, setDurationMinutes] = useState('30');
+  const [distanceKm, setDistanceKm] = useState('');
   const [customCalories, setCustomCalories] = useState('');
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState('');
@@ -55,10 +56,12 @@ const ExerciseTracker: React.FC = () => {
         date,
         exerciseType,
         durationMinutes: duration,
-        caloriesBurned: burned
+        caloriesBurned: burned,
+        distanceKm: distanceKm ? parseFloat(distanceKm) : 0
       });
       setSuccess('Exercise logged successfully!');
       setCustomCalories('');
+      setDistanceKm('');
       fetchExercises();
     } catch (err) {
       console.error(err);
@@ -137,6 +140,23 @@ const ExerciseTracker: React.FC = () => {
               </div>
             </div>
 
+            {['RUNNING', 'WALKING', 'CYCLING', 'SWIMMING'].includes(exerciseType) && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Distance (km)</label>
+                <div className="relative">
+                  <div className="absolute left-3.5 top-3 text-slate-500 font-bold text-xs pt-0.5">KM</div>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={distanceKm}
+                    onChange={(e) => setDistanceKm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-xs text-slate-100"
+                    placeholder="e.g. 5.2"
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Calories Burned (kcal)</label>
               <div className="relative">
@@ -184,7 +204,7 @@ const ExerciseTracker: React.FC = () => {
                     <div>
                       <h4 className="font-bold text-sm text-slate-200 uppercase tracking-wide">{item.exerciseType}</h4>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Duration: {item.durationMinutes} minutes
+                        {item.durationMinutes} minutes {item.distanceKm > 0 && `• ${item.distanceKm} km`}
                       </p>
                     </div>
                   </div>

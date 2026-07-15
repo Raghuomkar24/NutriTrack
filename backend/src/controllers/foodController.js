@@ -11,10 +11,8 @@ exports.getFoods = async (req, res) => {
       // Sort local results to prioritize 'Indian' brand foods to the top
       localFoods.sort((a, b) => (b.brand === 'Indian' ? 1 : 0) - (a.brand === 'Indian' ? 1 : 0));
 
-      // If we found a good amount of local matches, return them without hitting the external API
-      if (localFoods.length >= 3) {
-        return res.json(localFoods);
-      }
+      // We will ALWAYS fetch from Open Food Facts to get a vast variety of foods
+      // instead of relying only on the local dataset.
 
       // 2. Fetch from Open Food Facts if not enough local results
       const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=10`;
