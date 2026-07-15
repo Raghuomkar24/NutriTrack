@@ -20,7 +20,7 @@ router.post('/recognize', protect, upload.single('file'), async (req, res) => {
       const fileBytes = fs.readFileSync(req.file.path).toString("base64");
       
       const response = await ai.models.generateContent({
-          model: 'gemini-3.5-flash',
+          model: 'gemini-1.5-flash',
           contents: [
               {
                   role: 'user',
@@ -87,7 +87,7 @@ router.post('/chat', protect, async (req, res) => {
       const prompt = `You are NutriTrack Pro, an expert AI nutritionist. The user follows a ${dietString} diet and their goal is to ${user?.profile?.goal?.replace('_', ' ') || 'maintain health'}. Respond to the user concisely and helpfully in markdown. User says: "${userMessage}"`;
       
       const response = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt
       });
       return res.json({ response: response.text });
@@ -130,7 +130,7 @@ router.get('/reminder', protect, async (req, res) => {
       const prompt = `You are a proactive AI health coach. It is currently ${timeOfDay} (${currentHour}:00). The user has logged ${mealCount} meals today (Total: ${Math.round(totalCalories)} kcal). They have drank ${waterConsumed}ml of water out of their ${waterGoal}ml goal. Based strictly on this current time and their progress today, give them ONE very short, encouraging, and actionable reminder sentence. For example, if it's afternoon and they haven't logged lunch, remind them. Or if they are behind on water, nudge them to drink. Keep it under 25 words. No greetings, just the reminder.`;
       
       const response = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt
       });
       
