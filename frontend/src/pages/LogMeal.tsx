@@ -88,14 +88,15 @@ const LogMeal: React.FC = () => {
   };
 
   const handleAddItem = (food: any) => {
+    const foodId = food._id || food.id;
     // Check if food already in staged items
-    const exists = selectedItems.find(item => item.id === food.id);
+    const exists = selectedItems.find(item => item.id === foodId);
     if (exists) return;
 
     setSelectedItems(prev => [
       ...prev,
       {
-        id: food.id,
+        id: foodId,
         name: food.name,
         brand: food.brand || 'Generic',
         calories: food.calories,

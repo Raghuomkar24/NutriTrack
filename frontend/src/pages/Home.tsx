@@ -5,7 +5,8 @@ import {
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
-  Tooltip, PieChart, Pie, Cell 
+  Tooltip, PieChart, Pie, Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
 } from 'recharts';
 import api from '../api';
 
@@ -13,11 +14,19 @@ const Home: React.FC = () => {
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [date] = useState(new Date().toISOString().split('T')[0]); // Today's date yyyy-MM-dd
+  const [aiReminder, setAiReminder] = useState<string | null>(null);
 
   const fetchDashboardData = async () => {
     try {
       const summaryRes = await api.get(`/api/dashboard/summary?date=${date}`);
       setSummary(summaryRes.data);
+
+      try {
+        const reminderRes = await api.get('/api/ai/reminder');
+        setAiReminder(reminderRes.data.reminder);
+      } catch (err) {
+        console.error("Error loading AI reminder", err);
+      }
 
     } catch (err) {
       console.error("Error loading dashboard data", err);
@@ -119,6 +128,69 @@ const Home: React.FC = () => {
             <Plus size={14} />
             <span>Log a Meal</span>
           </Link>
+        </div>
+      </div>
+
+      {/* AI Smart Reminder */}
+      {aiReminder && (
+        <div className="bg-primary-500/10 border border-primary-500/20 rounded-2xl p-4 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500 shadow-glass">
+          <div className="p-2.5 bg-primary-500/20 rounded-xl text-primary-400">
+            <Sparkles size={24} />
+          </div>
+          <div>
+            <h4 className="text-xs font-black tracking-wider text-primary-400 uppercase mb-1">Ria's Smart Reminder</h4>
+            <p className="text-sm font-medium text-slate-200">{aiReminder}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Overall Daily Outcome */}
+      <div className="glass p-6 rounded-3xl border border-slate-800 bg-gradient-to-r from-indigo-950/20 to-slate-900/40 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400 mt-1 shadow-lg shadow-indigo-500/20">
+            <Award size={28} />
+          </div>
+          <div>
+            <h3 className="font-extrabold text-lg text-slate-200">Daily Outcome Summary</h3>
+            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+              {todayMeals.length === 0 
+                ? "You haven't logged any meals yet. Start tracking to see your outcome! " 
+                : caloriesRemaining > 0 
+                  ? `Great job! You are in a caloric deficit of ${Math.round(caloriesRemaining)} kcal. ` 
+                  : `You are over your budget by ${Math.round(Math.abs(caloriesRemaining))} kcal. `}
+            </p>
+            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+              {summary?.waterConsumedMl >= (summary?.waterGoal || 2500) 
+                ? "Hydration goal met! 💧 " 
+                : `Drink ${Math.max(0, (summary?.waterGoal || 2500) - (summary?.waterConsumedMl || 0))} ml more to hit your water goal. `}
+              {caloriesBurned > 0 ? `You've burned ${caloriesBurned} kcal through exercise today! 🏃‍♂️` : "No exercise logged yet."}
+            </p>
+          </div>
+        </div>
+
+        {/* The attractive chart for Overall Outcome */}
+        <div className="h-48 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={[
+                { name: 'Calories', Goal: dailyCaloriesGoal, Current: caloriesConsumed },
+                { name: 'Water', Goal: summary?.waterGoal || 2500, Current: summary?.waterConsumedMl || 0 },
+                { name: 'Exercise', Goal: 400, Current: caloriesBurned }
+              ]}
+              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+              <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '8px' }} 
+                cursor={{ fill: '#1e293b', opacity: 0.4 }}
+              />
+              <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', color: '#94a3b8' }} />
+              <Bar dataKey="Goal" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={16} />
+              <Bar dataKey="Current" fill="#10b981" radius={[4, 4, 0, 0]} barSize={16} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

@@ -17,11 +17,15 @@ const WeightTracker: React.FC = () => {
     try {
       const res = await api.get('/api/weight');
       setWeightHistory(res.data);
+    } catch (err) {
+      console.error("Failed to fetch weight history:", err);
+    }
 
+    try {
       const profileRes = await api.get('/api/profile');
       setProfile(profileRes.data);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch profile:", err);
     } finally {
       setLoading(false);
     }

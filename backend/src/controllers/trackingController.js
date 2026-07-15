@@ -1,4 +1,4 @@
-const { WaterLog } = require('../models/Tracking');
+const { WaterLog, WeightLog, ExerciseLog } = require('../models/Tracking');
 const Meal = require('../models/Meal');
 const User = require('../models/User');
 
@@ -66,10 +66,14 @@ exports.getDashboardSummary = async (req, res) => {
     const waterConsumedMl = waterLog ? waterLog.amount_ml : 0;
     const waterGoal = user.profile.gender === 'MALE' ? 3000 : 2200;
 
+    // Get exercises for the date to calculate calories burned
+    const exercises = await ExerciseLog.find({ user: req.user.id, date: targetDate });
+    const totalCaloriesBurned = exercises.reduce((acc, curr) => acc + curr.caloriesBurned, 0);
+
     res.json({
       dailyCaloriesGoal: user.profile.dailyCalories,
       caloriesConsumed: Math.round(caloriesConsumed),
-      caloriesBurned: 0, // Mocked for now, from ExerciseLog
+      caloriesBurned: Math.round(totalCaloriesBurned),
       proteinConsumed: Math.round(proteinConsumed),
       dailyProteinGoal: Math.round(user.profile.dailyProtein),
       carbsConsumed: Math.round(carbsConsumed),
@@ -80,6 +84,88 @@ exports.getDashboardSummary = async (req, res) => {
       waterConsumedMl,
       waterGoal
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getWeight = async (req, res) => {
+  try {
+    const logs = await WeightLog.find({ user: req.user.id }).sort({ date: 1 });
+    res.json(logs);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.logWeight = async (req, res) => {
+  try {
+    const { date, weight } = req.body;
+    const user = await User.findById(req.user.id);
+    
+    // Calculate new BMI
+    const heightM = user.profile.height / 100;
+    const bmi = heightM > 0 ? (weight / (heightM * heightM)).toFixed(1) : 0;
+    
+    const log = await WeightLog.findOneAndUpdate(
+      { user: req.user.id, date: new Date(date) },
+      { weight, bmi },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    
+    // Update user profile
+    user.profile.weight = weight;
+    user.profile.bmi = parseFloat(bmi);
+    await user.save();
+    
+    res.status(201).json(log);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getExercises = async (req, res) => {
+  try {
+    const { date } = req.query;
+    const logs = await ExerciseLog.find({ 
+      user: req.user.id, 
+      date: new Date(date) 
+    }).sort({ createdAt: -1 });
+    
+    const formattedLogs = logs.map(log => ({
+      id: log._id,
+      exerciseType: log.exerciseType,
+      durationMinutes: log.durationMinutes,
+      caloriesBurned: log.caloriesBurned
+    }));
+    
+    res.json(formattedLogs);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.logExercise = async (req, res) => {
+  try {
+    const { date, exerciseType, durationMinutes, caloriesBurned } = req.body;
+    const log = await ExerciseLog.create({
+      user: req.user.id,
+      date: new Date(date),
+      exerciseType,
+      durationMinutes,
+      caloriesBurned
+    });
+    res.status(201).json(log);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.deleteExercise = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await ExerciseLog.findOneAndDelete({ _id: id, user: req.user.id });
+    res.json({ message: 'Exercise deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
