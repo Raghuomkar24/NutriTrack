@@ -147,8 +147,8 @@ router.get('/reminder', protect, async (req, res) => {
     res.json({ reminder: "Don't forget to drink a glass of water and stay hydrated today!" });
 
   } catch (err) {
-    console.error("AI Reminder Error:", err);
-    res.status(500).json({ reminder: "Stay on track and keep up the great work today!" });
+    console.error("AI Reminder Error:", err.message);
+    res.json({ reminder: "Stay on track and keep up the great work today!" });
   }
 });
 
