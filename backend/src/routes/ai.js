@@ -92,11 +92,18 @@ router.post('/chat', protect, async (req, res) => {
       });
       return res.json({ response: response.text });
     } catch(err) {
-      console.error("Gemini Chat Error, falling back to mock:", err);
+      console.error("Gemini Chat Error:", err);
+      return res.json({ 
+        response: `⚠️ AI Connection Error: ${err.message}. Please check your API key and model settings.` 
+      });
     }
+  } else if (!ai) {
+    return res.json({
+      response: `⚠️ AI is not configured on this server. The GEMINI_API_KEY environment variable is missing.`
+    });
   }
 
-  // 2. Fallback Mock response
+  // Fallback Mock response (should only hit if userMessage is empty)
   res.json({
     response: `As an AI Coach, I noticed you follow a **${dietString}** diet. Based on your profile and goals, I recommend focusing on high-protein ${isVeg ? 'plant-based sources like lentils, tofu, and paneer' : 'sources like chicken, fish, and eggs'} to keep you full and meet your macro targets!`
   });
