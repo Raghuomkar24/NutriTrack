@@ -40,7 +40,8 @@ const calculateMacros = (profile) => {
 
 exports.registerUser = async (req, res) => {
   try {
-    const { email, password, name, mobile, age, gender, height, weight, targetWeight, activityLevel, goal, diet } = req.body;
+    let { email, password, name, mobile, age, gender, height, weight, targetWeight, activityLevel, goal, diet } = req.body;
+    if (email) email = email.trim().toLowerCase();
     
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ message: 'User already exists' });
@@ -75,7 +76,8 @@ exports.registerUser = async (req, res) => {
 
 exports.authUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    if (email) email = email.trim().toLowerCase();
     
     const user = await User.findOne({ email });
     if (user && (await bcrypt.compare(password, user.password))) {

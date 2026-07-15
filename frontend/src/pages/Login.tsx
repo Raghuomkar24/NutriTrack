@@ -37,8 +37,9 @@ const Login: React.FC = () => {
         navigate('/dashboard/home');
       }, 1000);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid email or password.');
-      setToast({ message: err.response?.data?.message || 'Invalid email or password.', type: 'error' });
+      const errorMsg = err.response?.data?.message || err.message || 'Login failed due to a network or server error.';
+      setError(errorMsg);
+      setToast({ message: errorMsg, type: 'error' });
     } finally {
       setLoading(false);
     }
