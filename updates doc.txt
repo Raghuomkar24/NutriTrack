@@ -1,0 +1,4 @@
+1) Profile look change
+2) Theme Change options
+3) Update and delete confirmation pop ups (CRUD operations for user)
+4) activity completed buttons 24 hours time gap

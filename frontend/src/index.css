@@ -2,16 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────────
+   Design System Tokens
+   ───────────────────────────────────────────────── */
+:root {
+  /* Progressive color stages */
+  --stage-low:       #475569;  /* slate-600 — inactive/0-30% */
+  --stage-active:    #16a34a;  /* emerald-600 — active/31-99% */
+  --stage-complete:  #f97316;  /* coral/orange — 100% celebration */
+  --stage-complete2: #fb923c;  /* lighter coral glow */
+
+  /* Base palette */
+  --bg-base:      #070b19;
+  --bg-card:      rgba(15, 23, 42, 0.55);
+  --border-faint: rgba(255, 255, 255, 0.07);
+  --border-mid:   rgba(255, 255, 255, 0.12);
+
+  /* Animation timings */
+  --spring-dur:  350ms;
+  --spring-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --slosh-ease:  cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
 @layer base {
   body {
     font-family: 'Inter', sans-serif;
+    background-color: var(--bg-base);
+    color: #f1f5f9;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', sans-serif;
   }
 }
 
-/* Glassmorphism Styles */
+/* ─────────────────────────────────────────────────
+   Glassmorphism Styles
+   ───────────────────────────────────────────────── */
 .glass {
   background: rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(16px);
@@ -33,9 +59,18 @@
 }
 
 .glass-orange {
-  background: rgba(234, 88, 12, 0.07);
+  background: rgba(249, 115, 22, 0.07);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(234, 88, 12, 0.2);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+/* Celebratory — coral glow variant */
+.glass-celebratory {
+  background: rgba(249, 115, 22, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  box-shadow: 0 0 30px rgba(249, 115, 22, 0.18), 0 8px 32px rgba(0,0,0,0.4);
 }
 
 .glass-input {
@@ -50,7 +85,9 @@
   outline: none;
 }
 
-/* Glow Background Effects */
+/* ─────────────────────────────────────────────────
+   Glow Background Spots
+   ───────────────────────────────────────────────── */
 .glow-spot-green {
   position: absolute;
   width: 400px;
@@ -65,13 +102,26 @@
   position: absolute;
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(234, 88, 12, 0.1) 0%, rgba(234, 88, 12, 0) 70%);
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.1) 0%, rgba(249, 115, 22, 0) 70%);
   filter: blur(50px);
   pointer-events: none;
   z-index: 0;
 }
 
-/* Custom Scrollbar */
+.glow-spot-coral {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.2) 0%, rgba(249, 115, 22, 0) 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────
+   Custom Scrollbar
+   ───────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -90,13 +140,200 @@
   background: rgba(22, 163, 74, 0.5);
 }
 
-/* Custom progress animation */
-@keyframes dash {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
+/* ─────────────────────────────────────────────────
+   Progress Bar — Progressive Stage Colors
+   ───────────────────────────────────────────────── */
+.progress-stage-low      { background: var(--stage-low);      }
+.progress-stage-active   { background: var(--stage-active);   }
+.progress-stage-complete { background: linear-gradient(90deg, var(--stage-complete), var(--stage-complete2)); }
 
+/* ─────────────────────────────────────────────────
+   Microinteraction Keyframes
+   ───────────────────────────────────────────────── */
+
+/* Original dash animation */
+@keyframes dash {
+  to { stroke-dashoffset: 0; }
+}
 .animate-dash {
   animation: dash 1s ease-out forwards;
+}
+
+/* Water fill — slosh side-to-side */
+@keyframes water-slosh {
+  0%   { transform: translateX(0) scaleX(1); }
+  20%  { transform: translateX(-4px) scaleX(1.04); }
+  40%  { transform: translateX(4px) scaleX(0.97); }
+  60%  { transform: translateX(-2px) scaleX(1.02); }
+  80%  { transform: translateX(1px) scaleX(0.99); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+
+.animate-water-slosh {
+  animation: water-slosh 600ms var(--slosh-ease) forwards;
+}
+
+/* Button tap — elastic compression */
+@keyframes btn-spring {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.88); }
+  60%  { transform: scale(1.08); }
+  80%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+.animate-btn-spring {
+  animation: btn-spring var(--spring-dur) var(--spring-ease) forwards;
+}
+
+/* Checkbox springy burst */
+@keyframes checkbox-spring {
+  0%   { transform: scale(1) rotate(0deg); }
+  20%  { transform: scale(0.8) rotate(-5deg); }
+  55%  { transform: scale(1.2) rotate(3deg); }
+  75%  { transform: scale(0.95) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.animate-checkbox-spring {
+  animation: checkbox-spring 450ms var(--spring-ease) forwards;
+}
+
+/* Checkmark draw animation */
+@keyframes draw-check {
+  from { stroke-dashoffset: 30; opacity: 0; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
+}
+
+.animate-draw-check {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: draw-check 300ms ease-out 200ms forwards;
+}
+
+/* Strike-through sweep */
+@keyframes strike-through {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+.animate-strike {
+  animation: strike-through 300ms ease-out forwards;
+}
+
+/* Card elevation on completion */
+@keyframes card-elevate {
+  0%   { transform: translateY(0);    box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+  50%  { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(249, 115, 22, 0.3); }
+  100% { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(249, 115, 22, 0.2); }
+}
+
+.animate-card-elevate {
+  animation: card-elevate 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Calorie ring pulse on completion */
+@keyframes ring-pulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.5)); }
+  50%       { filter: drop-shadow(0 0 18px rgba(249, 115, 22, 0.9)); }
+}
+
+.animate-ring-pulse {
+  animation: ring-pulse 1.5s ease-in-out infinite;
+}
+
+/* Container base pulse on water goal complete */
+@keyframes base-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+  50%       { box-shadow: 0 0 0 12px rgba(249, 115, 22, 0); }
+}
+
+.animate-base-pulse {
+  animation: base-pulse 1.2s ease-out infinite;
+}
+
+/* Glow pulse (for coral glow spot) */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.1); }
+}
+
+/* Confetti particle drop */
+@keyframes confetti-drop {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(120px) rotate(720deg); opacity: 0; }
+}
+
+.confetti-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confetti-drop 1.4s ease-in forwards;
+  pointer-events: none;
+}
+
+/* Celebration fade-in */
+@keyframes celebrate-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-celebrate-in {
+  animation: celebrate-in 400ms var(--spring-ease) forwards;
+}
+
+/* Shimmer sweep (for celebratory cards) */
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position: 200% center; }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #f97316 0%,
+    #fb923c 30%,
+    #fcd34d 50%,
+    #fb923c 70%,
+    #f97316 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Nav entrance stagger */
+@keyframes nav-fade-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.nav-item-enter {
+  animation: nav-fade-in 300ms ease-out both;
+}
+
+/* ─────────────────────────────────────────────────
+   Reduce Motion — Accessibility Compliance
+   ───────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-water-slosh,
+  .animate-btn-spring,
+  .animate-checkbox-spring,
+  .animate-draw-check,
+  .animate-strike,
+  .animate-card-elevate,
+  .animate-ring-pulse,
+  .animate-base-pulse,
+  .confetti-particle,
+  .animate-celebrate-in,
+  .shimmer-text,
+  .nav-item-enter,
+  .glow-spot-coral {
+    animation: none !important;
+    transition: none !important;
+  }
 }

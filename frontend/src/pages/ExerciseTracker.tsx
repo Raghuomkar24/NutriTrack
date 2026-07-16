@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dumbbell, Trash2, Calendar, Clock, Flame } from 'lucide-react';
+import { Dumbbell, Trash2, Calendar, Clock, Flame, CheckCircle } from 'lucide-react';
 import api from '../api';
 
 const ExerciseTracker: React.FC = () => {
@@ -11,6 +11,8 @@ const ExerciseTracker: React.FC = () => {
   const [customCalories, setCustomCalories] = useState('');
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState('');
+  const [submitSpring, setSubmitSpring] = useState(false);
+  const [newEntryId, setNewEntryId] = useState<number | null>(null);
 
   // Auto-estimate MET calories
   const estimates: Record<string, number> = {
@@ -51,8 +53,12 @@ const ExerciseTracker: React.FC = () => {
 
     const burned = customCalories ? parseFloat(customCalories) : getEstimatedBurn();
 
+    // Spring animation on submit
+    setSubmitSpring(true);
+    setTimeout(() => setSubmitSpring(false), 380);
+
     try {
-      await api.post('/api/exercise', {
+      const res = await api.post('/api/exercise', {
         date,
         exerciseType,
         durationMinutes: duration,
@@ -60,6 +66,8 @@ const ExerciseTracker: React.FC = () => {
         distanceKm: distanceKm ? parseFloat(distanceKm) : 0
       });
       setSuccess('Exercise logged successfully!');
+      setNewEntryId(res.data?.id || null);
+      setTimeout(() => setNewEntryId(null), 600);
       setCustomCalories('');
       setDistanceKm('');
       fetchExercises();
@@ -173,7 +181,9 @@ const ExerciseTracker: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-primary-500 hover:bg-primary-600 font-bold rounded-xl shadow-glass shadow-green-500/20 transition duration-200"
+              className={`w-full py-2.5 bg-primary-500 hover:bg-primary-600 font-bold rounded-xl shadow-glass shadow-green-500/20 transition-all duration-200 ${
+                submitSpring ? 'animate-btn-spring' : ''
+              }`}
             >
               Add Workout Log
             </button>
@@ -195,33 +205,49 @@ const ExerciseTracker: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {exercises.map((item: any) => (
-                <div key={item.id} className="p-4 bg-slate-900/40 border border-slate-800/80 rounded-2xl flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center font-bold text-orange-400 text-xs">
-                      🏋️
+              {exercises.map((item: any) => {
+                const isNew = item.id === newEntryId;
+                return (
+                  <div
+                    key={item.id}
+                    className={`p-4 border rounded-2xl flex items-center justify-between gap-4 transition-all duration-500 ${
+                      isNew
+                        ? 'bg-green-500/10 border-green-500/30 animate-card-elevate'
+                        : 'bg-slate-900/40 border-slate-800/80'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs transition-all duration-300 ${
+                        isNew
+                          ? 'bg-green-500/20 border border-green-500/40 animate-checkbox-spring'
+                          : 'bg-orange-500/10 border border-orange-500/20'
+                      }`}>
+                        {isNew ? <CheckCircle size={20} className="text-green-400" /> : '🏋️'}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm text-slate-200 uppercase tracking-wide">{item.exerciseType}</h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {item.durationMinutes} minutes {item.distanceKm > 0 && `• ${item.distanceKm} km`}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-slate-200 uppercase tracking-wide">{item.exerciseType}</h4>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {item.durationMinutes} minutes {item.distanceKm > 0 && `• ${item.distanceKm} km`}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-orange-400">-{item.caloriesBurned} kcal</p>
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <p className={`text-sm font-bold transition-colors duration-300 ${
+                          isNew ? 'text-green-400' : 'text-orange-400'
+                        }`}>-{item.caloriesBurned} kcal</p>
+                      </div>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition"
-                    >
-                      <Trash2 size={16} />
-                    </button>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

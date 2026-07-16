@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Droplet, Award, Plus, Trash2, Sparkles, ChevronRight, Download, Utensils 
@@ -10,11 +10,34 @@ import {
 } from 'recharts';
 import api from '../api';
 
+// Confetti particle
+const ConfettiParticle: React.FC<{ x: number; y: number; color: string; delay: number }> = ({ x, y, color, delay }) => (
+  <div
+    className="confetti-particle"
+    style={{
+      left: x,
+      top: y,
+      backgroundColor: color,
+      animationDelay: `${delay}ms`,
+      width: Math.random() > 0.5 ? '7px' : '11px',
+      height: Math.random() > 0.5 ? '7px' : '11px',
+      borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+    }}
+  />
+);
+
+const CONFETTI_COLORS = ['#f97316', '#fb923c', '#fcd34d', '#10b981', '#34d399', '#60a5fa', '#a78bfa', '#f472b6'];
+
 const Home: React.FC = () => {
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [date] = useState(new Date().toISOString().split('T')[0]); // Today's date yyyy-MM-dd
   const [aiReminder, setAiReminder] = useState<string | null>(null);
+  const [confetti, setConfetti] = useState<{ x: number; y: number; color: string; delay: number }[]>([]);
+  const [calorieCelebrated, setCalorieCelebrated] = useState(false);
+  const [waterSloshing, setWaterSloshing] = useState(false);
+  const prevCaloriePercent = useRef(0);
+  const prevWaterMl = useRef(0);
 
   const fetchDashboardData = async () => {
     try {
@@ -45,10 +68,14 @@ const Home: React.FC = () => {
       const newAmount = summary.waterConsumedMl + amount;
       const res = await api.post('/api/water', { date, amountMl: newAmount });
       setSummary({ ...summary, waterConsumedMl: res.data.amountMl });
+      // Slosh animation
+      setWaterSloshing(true);
+      setTimeout(() => setWaterSloshing(false), 650);
     } catch (err) {
       console.error(err);
     }
   };
+
 
   const handleDeleteMeal = async (mealId: number) => {
     try {
@@ -96,6 +123,31 @@ const Home: React.FC = () => {
     { name: 'Carbs', value: 45, color: '#3b82f6' },
     { name: 'Fats', value: 25, color: '#f59e0b' }
   ];
+
+  // Progressive calorie ring stage
+  const getCalorieRingColor = (pct: number) => {
+    if (pct >= 100) return '#f97316'; // coral celebration
+    if (pct >= 31)  return '#16a34a'; // green active
+    return '#475569'; // slate low
+  };
+
+  // Confetti trigger when calorie goal is met
+  useEffect(() => {
+    if (!summary) return;
+    const pct = Math.min(100, (summary.caloriesConsumed / ((summary.dailyCaloriesGoal || 2000) + (summary.caloriesBurned || 0))) * 100);
+    if (pct >= 100 && prevCaloriePercent.current < 100) {
+      setCalorieCelebrated(true);
+      const particles = Array.from({ length: 32 }, (_, i) => ({
+        x: Math.random() * 200,
+        y: Math.random() * 100,
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+        delay: Math.random() * 500,
+      }));
+      setConfetti(particles);
+      setTimeout(() => setConfetti([]), 1800);
+    }
+    prevCaloriePercent.current = pct;
+  }, [summary]);
 
   const handleDownloadReport = () => {
     const token = localStorage.getItem('token');
@@ -198,11 +250,26 @@ const Home: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Calorie Progress Ring */}
-        <div className="glass p-6 rounded-3xl border border-slate-800 flex flex-col items-center justify-center text-center">
+        <div className={`glass p-6 rounded-3xl border flex flex-col items-center justify-center text-center relative overflow-hidden transition-all duration-500 ${
+          calorieCelebrated
+            ? 'glass-celebratory border-orange-500/40 animate-card-elevate'
+            : 'border-slate-800'
+        }`}>
+          {/* Confetti overlay */}
+          {confetti.length > 0 && (
+            <div className="absolute inset-0 overflow-hidden pointer-events-none z-20">
+              {confetti.map((p, i) => (
+                <ConfettiParticle key={i} {...p} />
+              ))}
+            </div>
+          )}
+
           <h3 className="font-extrabold text-base mb-6 text-slate-300">Energy Summary</h3>
           <div className="relative w-48 h-48 flex items-center justify-center mb-6">
             {/* SVG Ring */}
-            <svg className="w-full h-full transform -rotate-90">
+            <svg className={`w-full h-full transform -rotate-90 ${
+              calorieCelebrated ? 'animate-ring-pulse' : ''
+            }`}>
               <circle
                 cx="96"
                 cy="96"
@@ -214,18 +281,24 @@ const Home: React.FC = () => {
                 cx="96"
                 cy="96"
                 r="80"
-                className="stroke-green-500 fill-transparent transition-all duration-500"
+                fill="transparent"
                 strokeWidth="12"
                 strokeDasharray={502.4}
                 strokeDashoffset={502.4 - (502.4 * caloriePercent) / 100}
                 strokeLinecap="round"
+                stroke={getCalorieRingColor(caloriePercent)}
+                className="transition-all duration-700"
               />
             </svg>
 
             {/* Inner Text */}
             <div className="absolute flex flex-col items-center justify-center">
-              <span className="text-3xl font-extrabold tracking-tight">{Math.round(caloriesRemaining)}</span>
-              <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">kcal remaining</span>
+              <span className={`text-3xl font-extrabold tracking-tight transition-colors duration-500 ${
+                calorieCelebrated ? 'text-orange-400' : ''
+              }`}>{Math.round(caloriesRemaining)}</span>
+              <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
+                {calorieCelebrated ? '🎯 goal hit!' : 'kcal remaining'}
+              </span>
             </div>
           </div>
 
@@ -329,27 +402,38 @@ const Home: React.FC = () => {
 
             <div className="flex items-center gap-4 mb-4">
               <div className="relative w-16 h-20 bg-slate-800 border-2 border-slate-700 rounded-b-2xl rounded-t-sm overflow-hidden flex items-end">
-                <div 
-                  className="w-full bg-blue-500 transition-all duration-500 ease-out" 
+                <div
+                  className={`w-full transition-all duration-500 ease-out ${
+                    waterSloshing ? 'animate-water-slosh' : ''
+                  } ${
+                    (summary?.waterConsumedMl || 0) >= (summary?.waterGoal || 2500)
+                      ? 'bg-gradient-to-t from-orange-500 to-orange-400'  /* coral when complete */
+                      : (summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500) >= 0.31
+                        ? 'bg-gradient-to-t from-blue-600 to-blue-400'   /* blue active */
+                        : 'bg-gradient-to-t from-slate-600 to-slate-500' /* slate low */
+                  }`}
                   style={{ height: `${Math.min(100, ((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100)}%` }}
                 ></div>
               </div>
               <div>
-                <p className="text-2xl font-extrabold text-blue-400">{summary?.waterConsumedMl || 0} ml</p>
+                <p className={`text-2xl font-extrabold transition-colors duration-500 ${
+                  (summary?.waterConsumedMl || 0) >= (summary?.waterGoal || 2500)
+                    ? 'text-orange-400' : 'text-blue-400'
+                }`}>{summary?.waterConsumedMl || 0} ml</p>
                 <p className="text-xs text-slate-500">Goal: {summary?.waterGoal || 2500} ml</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <button 
+              <button
                 onClick={() => handleAddWater(250)}
-                className="py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-xs font-semibold rounded-xl text-blue-400 transition"
+                className="py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-xs font-semibold rounded-xl text-blue-400 transition active:scale-90"
               >
                 +250ml Glass
               </button>
-              <button 
+              <button
                 onClick={() => handleAddWater(500)}
-                className="py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-xs font-semibold rounded-xl text-blue-400 transition"
+                className="py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-xs font-semibold rounded-xl text-blue-400 transition active:scale-90"
               >
                 +500ml Bottle
               </button>
