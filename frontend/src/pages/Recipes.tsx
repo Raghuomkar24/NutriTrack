@@ -7,7 +7,7 @@ import api from '../api';
 const Recipes: React.FC = () => {
   const [recipes, setRecipes] = useState<any[]>([]);
   const [shoppingLists, setShoppingLists] = useState<any[]>([]);
-  const [selectedRecipeIds, setSelectedRecipeIds] = useState<number[]>([]);
+  const [selectedRecipeIds, setSelectedRecipeIds] = useState<string[]>([]);
   
   // Create Recipe modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -41,7 +41,7 @@ const Recipes: React.FC = () => {
     fetchRecipeData();
   }, []);
 
-  const handleToggleSelectRecipe = (id: number) => {
+  const handleToggleSelectRecipe = (id: string) => {
     setSelectedRecipeIds(prev => 
       prev.includes(id) ? prev.filter(rId => rId !== id) : [...prev, id]
     );
@@ -59,7 +59,7 @@ const Recipes: React.FC = () => {
     }
   };
 
-  const handleDeleteList = async (id: number) => {
+  const handleDeleteList = async (id: string) => {
     try {
       await api.delete(`/api/shopping-list/${id}`);
       const updated = shoppingLists.filter(l => l.id !== id);
@@ -218,7 +218,7 @@ const Recipes: React.FC = () => {
                   <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Select Active List</label>
                   <select
                     value={activeList?.id || ''}
-                    onChange={(e) => setActiveList(shoppingLists.find(l => l.id === parseInt(e.target.value)))}
+                    onChange={(e) => setActiveList(shoppingLists.find(l => l.id === e.target.value))}
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-semibold"
                   >
                     {shoppingLists.map(list => (

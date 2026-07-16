@@ -26,6 +26,8 @@ app.use('/api/foods', require('./src/routes/foods'));
 app.use('/api', require('./src/routes/tracking')); // /api/water and /api/dashboard/summary
 app.use('/api/ai', require('./src/routes/ai'));
 app.use('/api/reports', require('./src/routes/reports'));
+app.use('/api/recipes', require('./src/routes/recipes'));
+app.use('/api/shopping-list', require('./src/routes/shoppingList'));
 
 const PORT = process.env.PORT || 8085;
 

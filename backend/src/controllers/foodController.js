@@ -11,33 +11,40 @@ exports.getFoods = async (req, res) => {
       // Sort local results to prioritize 'Indian' brand foods to the top
       localFoods.sort((a, b) => (b.brand === 'Indian' ? 1 : 0) - (a.brand === 'Indian' ? 1 : 0));
 
-      // We will ALWAYS fetch from Open Food Facts to get a vast variety of foods
-      // instead of relying only on the local dataset.
+      // Performance Optimization: If we have 5 or more local results, return them immediately
+      // to avoid making a slow external API request.
+      if (localFoods.length >= 5) {
+        return res.json(localFoods);
+      }
 
       // 2. Fetch from Open Food Facts if not enough local results
-      const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=10`;
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (data.products && data.products.length > 0) {
-        // Upsert each valid product into local DB
-        for (const p of data.products) {
-          if (p.product_name && p.nutriments && p.nutriments['energy-kcal_100g'] !== undefined) {
-            await Food.findOneAndUpdate(
-              { barcode: p.code },
-              {
-                name: p.product_name || 'Unknown Product',
-                brand: p.brands || 'Generic',
-                calories: p.nutriments['energy-kcal_100g'] || 0,
-                protein: p.nutriments['proteins_100g'] || 0,
-                carbohydrates: p.nutriments['carbohydrates_100g'] || 0,
-                fat: p.nutriments['fat_100g'] || 0,
-                servingSize: p.serving_size || '100g'
-              },
-              { upsert: true, new: true, setDefaultsOnInsert: true }
-            );
+      try {
+        const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=10`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.products && data.products.length > 0) {
+          // Upsert each valid product into local DB
+          for (const p of data.products) {
+            if (p.product_name && p.nutriments && p.nutriments['energy-kcal_100g'] !== undefined) {
+              await Food.findOneAndUpdate(
+                { barcode: p.code },
+                {
+                  name: p.product_name || 'Unknown Product',
+                  brand: p.brands || 'Generic',
+                  calories: p.nutriments['energy-kcal_100g'] || 0,
+                  protein: p.nutriments['proteins_100g'] || 0,
+                  carbohydrates: p.nutriments['carbohydrates_100g'] || 0,
+                  fat: p.nutriments['fat_100g'] || 0,
+                  servingSize: p.serving_size || '100g'
+                },
+                { upsert: true, new: true, setDefaultsOnInsert: true }
+              );
+            }
           }
         }
+      } catch (fetchErr) {
+        console.warn("Failed to fetch from Open Food Facts API (offline or slow), utilizing local matches only:", fetchErr.message);
       }
       
       // 3. Query local DB again and sort Indian foods to top
