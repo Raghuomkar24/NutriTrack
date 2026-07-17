@@ -18,7 +18,7 @@ const ConfettiParticle: React.FC<{ x: number; y: number; color: string; delay: n
   />
 );
 
-const CONFETTI_COLORS = ['#f97316', '#fb923c', '#fcd34d', '#10b981', '#34d399', '#60a5fa', '#a78bfa'];
+const CONFETTI_COLORS = ['#FFE3D4', '#FFF1E6', '#FF9E8A', '#B56A45', '#F4F3EE'];
 
 const WaterTracker: React.FC = () => {
   const [amountMl, setAmountMl] = useState(0);
@@ -130,9 +130,9 @@ const WaterTracker: React.FC = () => {
 
   // Progressive fill color based on stage
   const getFillColor = () => {
-    if (isComplete) return 'linear-gradient(180deg, #f97316 0%, #fb923c 100%)'; // coral celebration
-    if (percent >= 31)  return 'linear-gradient(180deg, #2563eb 0%, #0ea5e9 100%)'; // active blue
-    return 'linear-gradient(180deg, #475569 0%, #334155 100%)';  // slate low
+    if (isComplete) return 'linear-gradient(180deg, #B56A45 0%, #FF9E8A 100%)'; // terracotta complete
+    if (percent >= 31)  return 'linear-gradient(180deg, #81b5ca 0%, #a2d2df 100%)'; // active blue
+    return 'linear-gradient(180deg, #8A817C 0%, #A09893 100%)';  // slate low
   };
 
   return (
@@ -146,7 +146,7 @@ const WaterTracker: React.FC = () => {
             'Water Tracker'
           )}
         </h2>
-        <p className="text-slate-400 text-sm mt-1">Stay hydrated by tracking your water consumption daily.</p>
+        <p className="text-slate-500 text-sm mt-1 font-semibold">Stay hydrated by tracking your water consumption daily.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -155,8 +155,8 @@ const WaterTracker: React.FC = () => {
           ref={containerRef}
           className={`glass p-8 rounded-3xl border flex flex-col items-center text-center relative overflow-hidden transition-all duration-500 ${
             isComplete
-              ? 'glass-celebratory animate-base-pulse border-orange-500/40'
-              : 'border-slate-800'
+              ? 'card-celebratory animate-base-pulse border-primary-500/40'
+              : 'border-white/40'
           }`}
         >
           {/* Confetti overlay */}
@@ -170,20 +170,20 @@ const WaterTracker: React.FC = () => {
 
           {/* Celebration badge */}
           {isComplete && (
-            <div className="absolute top-4 right-4 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-orange-400 animate-celebrate-in">
+            <div className="absolute top-4 right-4 flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide text-primary-600 animate-celebrate-in">
               <Sparkles size={14} className="animate-pulse" />
               <span>Goal Crushed!</span>
             </div>
           )}
 
           {!isComplete && (
-            <div className="absolute top-4 right-4 text-blue-400 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide">
+            <div className="absolute top-4 right-4 text-blue-600 flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide">
               <Droplet size={14} className="animate-bounce" />
               <span>Target Active</span>
             </div>
           )}
 
-          <h3 className="font-extrabold text-base mb-8 text-slate-300">Daily Hydration Goal</h3>
+          <h3 className="font-extrabold text-base mb-8 text-slate-800">Daily Hydration Goal</h3>
 
           {/* Glass grid */}
           <div className="grid grid-cols-4 md:grid-cols-5 gap-4 mb-6">
@@ -196,12 +196,12 @@ const WaterTracker: React.FC = () => {
                   className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 ${
                     isFilled
                       ? isComplete
-                        ? 'bg-orange-500/20 shadow-[0_0_18px_rgba(249,115,22,0.4)] text-orange-400 border border-orange-500/60 scale-105'
-                        : 'bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.3)] text-blue-400 border border-blue-500/50 scale-105'
-                      : 'bg-slate-800/50 text-slate-500 border border-slate-700 hover:bg-slate-800 hover:text-slate-400'
+                        ? 'bg-primary-100/50 shadow-[0_0_15px_rgba(181,106,69,0.15)] text-primary-700 border border-primary-500/40 scale-105'
+                        : 'bg-blue-50/50 shadow-[0_0_15px_rgba(129,181,202,0.2)] text-blue-650 border border-blue-300 scale-105'
+                      : 'bg-white/30 text-slate-500 border border-white/40 hover:bg-white/55 hover:text-slate-700'
                   } ${btnSpring === `glass-${idx}` ? 'animate-btn-spring' : ''}`}
                 >
-                  <GlassWater size={28} className={isFilled ? (isComplete ? 'fill-orange-500/20' : 'fill-blue-500/20') : ''} />
+                  <GlassWater size={28} className={isFilled ? (isComplete ? 'fill-primary-500/20' : 'fill-blue-500/20') : ''} />
                   <span className="text-[10px] font-bold mt-1">250ml</span>
                 </button>
               );
@@ -209,7 +209,7 @@ const WaterTracker: React.FC = () => {
           </div>
 
           {/* Water fill bar with slosh */}
-          <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden mb-4">
+          <div className="w-full h-3 bg-slate-200/50 rounded-full overflow-hidden mb-4">
             <div
               className={`h-full rounded-full transition-all duration-500 ${sloshing ? 'animate-water-slosh' : ''}`}
               style={{
@@ -222,16 +222,16 @@ const WaterTracker: React.FC = () => {
           <div className="space-y-1">
             <p
               className={`text-3xl font-extrabold transition-colors duration-500 ${
-                isComplete ? 'text-orange-400' : 'text-blue-400'
+                isComplete ? 'text-primary-650' : 'text-blue-650'
               }`}
             >
               {amountMl} ml
             </p>
-            <p className="text-xs text-slate-500 font-semibold">
+            <p className="text-xs text-slate-550 font-bold">
               {isComplete ? '🎯 Daily goal achieved!' : `Remaining: ${remaining} ml / Goal: ${waterGoal} ml`}
             </p>
             {!isComplete && (
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-slate-600 font-semibold">
                 {Math.round(percent)}% of daily goal
               </p>
             )}
@@ -240,8 +240,8 @@ const WaterTracker: React.FC = () => {
 
         {/* Logging Actions */}
         <div className="space-y-6">
-          <div className="glass p-6 rounded-3xl border border-slate-800 space-y-5">
-            <h3 className="font-extrabold text-base text-slate-300">Quick Add</h3>
+          <div className="glass p-6 rounded-3xl border border-slate-300 space-y-5">
+            <h3 className="font-extrabold text-base text-slate-800">Quick Add</h3>
 
             {/* Quick buttons */}
             <div className="grid grid-cols-2 gap-3">
@@ -254,14 +254,14 @@ const WaterTracker: React.FC = () => {
                 <button
                   key={id}
                   onClick={() => handleUpdateWater(amount, id)}
-                  className={`py-3 text-xs font-semibold rounded-xl transition-all duration-200 ${
+                  className={`py-3 text-xs font-bold rounded-xl transition-all duration-200 active:scale-95 ${
                     btnSpring === id ? 'animate-btn-spring' : ''
                   } ${
                     amount > 0
                       ? isComplete
-                        ? 'bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-400'
-                        : 'bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400'
-                      : 'bg-slate-800/50 hover:bg-slate-800 border border-slate-700 text-slate-400'
+                        ? 'bg-primary-100 hover:bg-primary-200 border border-primary-200 text-primary-750'
+                        : 'bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-650'
+                      : 'bg-white/45 hover:bg-white/70 border border-slate-350 text-slate-650'
                   }`}
                 >
                   {label}
@@ -270,8 +270,8 @@ const WaterTracker: React.FC = () => {
             </div>
 
             {/* Custom input */}
-            <form onSubmit={handleCustomSubmit} className="pt-4 border-t border-slate-800 space-y-3">
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <form onSubmit={handleCustomSubmit} className="pt-4 border-t border-slate-300 space-y-3">
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
                 Log Custom Amount (ml)
               </label>
               <div className="flex gap-3">
@@ -279,16 +279,16 @@ const WaterTracker: React.FC = () => {
                   type="number"
                   value={customInput}
                   onChange={(e) => setCustomInput(e.target.value)}
-                  className="flex-1 px-4 py-2.5 rounded-xl glass-input text-xs text-slate-100"
+                  className="flex-1 px-4 py-2.5 rounded-xl glass-input text-xs text-slate-850 font-bold"
                   placeholder="e.g. 750, 1000"
                   required
                 />
                 <button
                   type="submit"
-                  className={`px-5 py-2.5 font-bold text-xs rounded-xl transition-all duration-200 ${
+                  className={`px-5 py-2.5 font-bold text-xs rounded-xl active:scale-95 transition-all duration-200 ${
                     isComplete
-                      ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                      : 'bg-blue-500 hover:bg-blue-600 text-white'
+                      ? 'bg-primary-600 hover:bg-primary-700 text-white'
+                      : 'bg-blue-650 hover:bg-blue-700 text-white'
                   }`}
                 >
                   Log Water
@@ -299,21 +299,21 @@ const WaterTracker: React.FC = () => {
 
           {/* Tips / celebration panel */}
           {isComplete ? (
-            <div className="glass-celebratory p-5 rounded-3xl flex gap-3 animate-celebrate-in">
-              <Sparkles className="text-orange-400 flex-shrink-0 animate-pulse" size={20} />
+            <div className="card-celebratory p-5 rounded-3xl flex gap-3 animate-celebrate-in">
+              <Sparkles className="text-primary-600 flex-shrink-0 animate-pulse" size={20} />
               <div className="space-y-1">
-                <h4 className="font-bold text-sm text-orange-300">Hydration Hero! 🏆</h4>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
+                <h4 className="font-extrabold text-sm text-primary-700">Hydration Hero! 🏆</h4>
+                <p className="text-[11px] text-slate-650 leading-relaxed font-semibold">
                   You've crushed your water goal for today! Staying hydrated boosts energy, improves focus, and accelerates recovery. Keep it up tomorrow!
                 </p>
               </div>
             </div>
           ) : (
-            <div className="glass p-5 rounded-3xl border border-slate-800/80 bg-slate-900/20 flex gap-3">
-              <HelpCircle className="text-blue-400 flex-shrink-0" size={20} />
+            <div className="glass p-5 rounded-3xl border border-white/40 bg-white/20 flex gap-3">
+              <HelpCircle className="text-blue-500 flex-shrink-0" size={20} />
               <div className="space-y-1">
-                <h4 className="font-bold text-xs text-slate-300">Why Hydration Matters</h4>
-                <p className="text-[11px] text-slate-500 leading-relaxed">
+                <h4 className="font-bold text-xs text-slate-800">Why Hydration Matters</h4>
+                <p className="text-[11px] text-slate-600 leading-relaxed font-semibold">
                   Water increases energy level, improves physical stamina, aids in digestion, and speeds up weight loss by boosting metabolic rates.
                 </p>
               </div>

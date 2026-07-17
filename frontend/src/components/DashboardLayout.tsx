@@ -109,21 +109,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#070b19] text-slate-100 flex flex-col md:flex-row relative">
-      {/* Background glow elements */}
-      <div className="glow-spot-green top-10 left-10"></div>
-      <div className="glow-spot-orange bottom-10 right-10"></div>
-      <div className="glow-spot-coral" style={{ top: '40%', right: '-5%' }}></div>
-
+    <div className="min-h-screen bg-gradient-to-b from-[#FFF1E6] to-[#F4F3EE] text-[#463F3A] flex flex-col md:flex-row relative">
       {/* Sidebar for Desktop */}
-      <aside className="w-64 glass hidden md:flex flex-col border-r border-slate-800 z-10">
-        <div className="p-6 border-b border-slate-800 flex items-center gap-3">
+      <aside className="w-64 glass border-r border-white/40 hidden md:flex flex-col z-10 shadow-sm rounded-none">
+        <div className="p-6 border-b border-slate-300 flex items-center gap-3">
           <span className="text-3xl">🥑</span>
           <div>
-            <h1 className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+            <h1 className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
               NutriTrack Pro
             </h1>
-            <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">AI Health Tracker</span>
+            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">AI Health Tracker</span>
           </div>
         </div>
 
@@ -136,32 +131,37 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 key={item.name}
                 to={item.path}
                 style={{ animationDelay: `${idx * 40}ms` }}
-                className={`nav-item-enter flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                className={`nav-item-enter flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
                   active 
-                    ? 'bg-primary-500 text-white font-medium shadow-glass-coral' 
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/40'
+                    ? 'bg-white/50 text-primary-600 font-bold shadow-sm' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/20'
                 }`}
               >
-                <Icon size={20} />
+                <div className="relative flex items-center justify-center">
+                  <Icon size={20} className={`transition-transform duration-200 ${active ? 'scale-115 text-primary-650' : 'group-hover:scale-110'}`} />
+                  {active && (
+                    <span className="absolute -bottom-1 w-1.5 h-1.5 bg-primary-500 rounded-full shadow-[0_0_8px_#FF9E8A] animate-pulse"></span>
+                  )}
+                </div>
                 <span>{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-slate-800 space-y-3">
+        <div className="p-4 border-t border-slate-350 space-y-3">
           <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-emerald-500 flex items-center justify-center font-bold text-white uppercase shadow-md shadow-green-500/20">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-600 to-primary-500 flex items-center justify-center font-bold text-white uppercase shadow-md shadow-primary-500/20">
               {user.name ? user.name[0] : 'U'}
             </div>
             <div className="truncate">
-              <p className="text-sm font-semibold truncate">{user.name || 'User'}</p>
+              <p className="text-sm font-semibold truncate text-slate-800">{user.name || 'User'}</p>
               <p className="text-xs text-slate-500 truncate">{user.email || 'user@email.com'}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-800 hover:border-red-500/30 hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-all duration-200"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 hover:border-primary-600/30 hover:bg-primary-100/50 text-slate-650 hover:text-primary-600 transition-all duration-200 font-bold active:scale-95"
           >
             <LogOut size={16} />
             <span>Logout</span>
@@ -170,10 +170,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </aside>
 
       {/* Mobile Top Nav */}
-      <header className="md:hidden glass border-b border-slate-800 h-16 flex items-center justify-between px-4 z-20">
+      <header className="md:hidden glass border-b border-slate-300 h-16 flex items-center justify-between px-4 z-20 rounded-none">
         <div className="flex items-center gap-2">
           <span className="text-2xl">🥑</span>
-          <span className="font-extrabold text-lg bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+          <span className="font-extrabold text-lg bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
             NutriTrack Pro
           </span>
         </div>
@@ -182,17 +182,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           {/* Notification Icon */}
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
-            className="p-2 text-slate-400 hover:text-slate-100 rounded-xl relative hover:bg-slate-800"
+            className="p-2 text-slate-600 hover:text-slate-900 rounded-xl relative hover:bg-white/30"
           >
             <Bell size={20} />
             {notifications.some(n => !n.isRead) && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full"></span>
             )}
           </button>
 
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="p-2 text-slate-400 hover:text-slate-100 rounded-xl hover:bg-slate-800"
+            className="p-2 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-white/30"
           >
             <Menu size={24} />
           </button>
@@ -202,22 +202,22 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Mobile Sidebar Drawer */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
-          <aside className="w-64 bg-slate-900 border-r border-slate-800 p-6 flex flex-col relative z-10 animate-slide-in">
+          <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs" onClick={() => setMobileMenuOpen(false)}></div>
+          <aside className="w-64 glass border-r border-slate-300 p-6 flex flex-col relative z-10 animate-slide-in rounded-none">
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-100 rounded-xl hover:bg-slate-850"
+              className="absolute top-4 right-4 p-2 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100"
             >
               <X size={20} />
             </button>
 
-            <div className="flex items-center gap-3 pb-6 border-b border-slate-800 mb-6">
+            <div className="flex items-center gap-3 pb-6 border-b border-slate-300 mb-6">
               <span className="text-3xl">🥑</span>
               <div>
-                <h1 className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+                <h1 className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
                   NutriTrack Pro
                 </h1>
-                <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">AI Health Tracker</span>
+                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">AI Health Tracker</span>
               </div>
             </div>
 
@@ -230,32 +230,37 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     key={item.name}
                     to={item.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
                       active 
-                        ? 'bg-primary-500 text-white font-medium' 
-                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
+                        ? 'bg-white/50 text-primary-600 font-bold' 
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/20'
                     }`}
                   >
-                    <Icon size={20} />
+                    <div className="relative flex items-center justify-center">
+                      <Icon size={20} className={`transition-transform duration-200 ${active ? 'scale-115 text-primary-650' : 'group-hover:scale-110'}`} />
+                      {active && (
+                        <span className="absolute -bottom-1 w-1.5 h-1.5 bg-primary-500 rounded-full shadow-[0_0_8px_#FF9E8A]"></span>
+                      )}
+                    </div>
                     <span>{item.name}</span>
                   </Link>
                 );
               })}
             </nav>
 
-            <div className="pt-4 border-t border-slate-800 mt-6 space-y-4">
+            <div className="pt-4 border-t border-slate-300 mt-6 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-emerald-500 flex items-center justify-center font-bold text-white uppercase">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-600 to-primary-500 flex items-center justify-center font-bold text-white uppercase">
                   {user.name ? user.name[0] : 'U'}
                 </div>
                 <div className="truncate">
-                  <p className="text-sm font-semibold truncate">{user.name || 'User'}</p>
+                  <p className="text-sm font-semibold truncate text-slate-800">{user.name || 'User'}</p>
                   <p className="text-xs text-slate-500 truncate">{user.email || 'user@email.com'}</p>
                 </div>
               </div>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-800 hover:border-red-500/30 hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-all duration-200"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 hover:border-primary-600/30 hover:bg-primary-100/50 text-slate-650 hover:text-primary-600 transition-all duration-200 font-semibold active:scale-95"
               >
                 <LogOut size={16} />
                 <span>Logout</span>
@@ -272,23 +277,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <div className="relative">
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2.5 text-slate-400 hover:text-slate-100 glass rounded-xl relative hover:bg-slate-800/50 transition-all duration-200"
+              className="p-2.5 text-slate-600 hover:text-slate-900 bg-white/50 border border-slate-300 rounded-xl relative hover:bg-white/80 shadow-sm transition-all duration-200 active:scale-95"
             >
               <Bell size={20} />
               {notifications.some(n => !n.isRead) && (
-                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-primary-500 rounded-full shadow-[0_0_4px_#FF9E8A]"></span>
               )}
             </button>
 
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 glass rounded-2xl border border-slate-800 shadow-2xl p-4 z-50">
-                <div className="flex justify-between items-center pb-2 border-b border-slate-800 mb-3">
-                  <h3 className="font-bold text-sm">Notifications</h3>
-                  <button onClick={markAllRead} className="text-xs text-primary-500 hover:underline">Mark all read</button>
+              <div className="absolute right-0 mt-2 w-80 glass rounded-2xl border border-slate-300 shadow-xl p-4 z-50">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-300 mb-3">
+                  <h3 className="font-bold text-sm text-slate-800">Notifications</h3>
+                  <button onClick={markAllRead} className="text-xs text-primary-600 hover:underline font-bold">Mark all read</button>
                 </div>
                 <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                   {notifications.map(n => (
-                    <div key={n.id} className={`p-2.5 rounded-xl text-xs transition-all ${n.isRead ? 'opacity-60 bg-slate-800/20' : 'bg-primary-500/10 border border-primary-500/20 text-slate-200'}`}>
+                    <div key={n.id} className={`p-2.5 rounded-xl text-xs transition-all ${n.isRead ? 'opacity-60 bg-white/30 text-slate-600' : 'bg-primary-50 border border-primary-200 text-slate-800 font-bold'}`}>
                       <p>{n.message}</p>
                     </div>
                   ))}
