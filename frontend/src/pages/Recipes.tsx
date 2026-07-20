@@ -344,8 +344,8 @@ const Recipes: React.FC = () => {
                 </div>
                 {/* Category chips */}
                 <div className="absolute bottom-2 left-2 flex gap-1">
-                  {[...new Set((recipe.recipeIngredients || []).map((ing: any) => classifyIngredient(ing.ingredient?.name || '')))].slice(0,2).map((cat) => {
-                    const c = CATEGORY_COLORS[cat as Category];
+                  {(Array.from(new Set((recipe.recipeIngredients || []).map((ing: any) => classifyIngredient(ing.ingredient?.name || '')))) as Category[]).slice(0,2).map((cat) => {
+                    const c = CATEGORY_COLORS[cat];
                     return (
                       <span key={cat} className={`text-[9px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${c.chip}`}>{cat}</span>
                     );
@@ -629,7 +629,7 @@ const Recipes: React.FC = () => {
                       ['Fat (g)',         recipeFat, setRecipeFat],
                     ].map(([label, val, setter]) => (
                       <div key={label as string}>
-                        <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{label}</label>
+                        <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{label as string}</label>
                         <input type="number" value={val as number}
                           onChange={e => (setter as (v: number) => void)(parseInt(e.target.value) || 0)}
                           className="w-full px-4 py-2.5 rounded-xl glass-input text-sm text-slate-800 font-medium" />

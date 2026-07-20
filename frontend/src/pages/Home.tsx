@@ -84,6 +84,18 @@ const Home: React.FC = () => {
     return base.map(item => completedIds.includes(item.id) ? { ...item, completed: true } : item);
   });
 
+  const triggerCalorieConfetti = () => {
+    setCalorieCelebrated(true);
+    const particles = Array.from({ length: 32 }, (_, i) => ({
+      x: Math.random() * 260,
+      y: Math.random() * 180,
+      color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+      delay: Math.random() * 400,
+    }));
+    setCalorieConfetti(particles);
+    setTimeout(() => setCalorieConfetti([]), 1800);
+  };
+
   const handleToggleChecklist = (id: number) => {
     setExercisesChecklist(prev => {
       const updated = prev.map(e => e.id === id ? { ...e, completed: true } : e);
@@ -134,15 +146,7 @@ const Home: React.FC = () => {
     const pct = Math.min(100, (caloriesConsumed / (dailyCaloriesGoal + caloriesBurned)) * 100);
     
     if (pct >= 100 && prevCaloriePercent.current < 100) {
-      setCalorieCelebrated(true);
-      const particles = Array.from({ length: 32 }, (_, i) => ({
-        x: Math.random() * 260,
-        y: Math.random() * 180,
-        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-        delay: Math.random() * 400,
-      }));
-      setCalorieConfetti(particles);
-      setTimeout(() => setCalorieConfetti([]), 1800);
+      triggerCalorieConfetti();
     } else if (pct < 100) {
       setCalorieCelebrated(false);
     }

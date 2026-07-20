@@ -39,7 +39,11 @@ const Profile: React.FC = () => {
       });
     } catch (err) {
       console.error(err);
-      setError('Could not retrieve profile.');
+      showAlert({
+        type: 'delete',
+        title: 'Error',
+        body: 'Could not retrieve profile.',
+      });
     } finally {
       setLoading(false);
     }
