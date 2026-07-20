@@ -6,14 +6,13 @@ exports.getFoods = async (req, res) => {
     const { q } = req.query;
     if (q) {
       // 1. Check local DB first for matches (prioritizing our seeded Indian foods)
-      let localFoods = await Food.find({ name: { $regex: q, $options: 'i' } }).limit(20);
+      let localFoods = await Food.find({ name: { $regex: q, $options: 'i' } }).limit(30);
       
       // Sort local results to prioritize 'Indian' brand foods to the top
       localFoods.sort((a, b) => (b.brand === 'Indian' ? 1 : 0) - (a.brand === 'Indian' ? 1 : 0));
 
-      // Performance Optimization: If we have 5 or more local results, return them immediately
-      // to avoid making a slow external API request.
-      if (localFoods.length >= 5) {
+      // If we have 10 or more local results, skip the external API call
+      if (localFoods.length >= 10) {
         return res.json(localFoods);
       }
 
@@ -48,14 +47,17 @@ exports.getFoods = async (req, res) => {
       }
       
       // 3. Query local DB again and sort Indian foods to top
-      const finalFoods = await Food.find({ name: { $regex: q, $options: 'i' } }).limit(20);
+      const finalFoods = await Food.find({ name: { $regex: q, $options: 'i' } }).limit(30);
       finalFoods.sort((a, b) => (b.brand === 'Indian' ? 1 : 0) - (a.brand === 'Indian' ? 1 : 0));
       return res.json(finalFoods);
     }
     
-    // No query, just return recent local foods
-    const foods = await Food.find().limit(20);
-    res.json(foods);
+    // No query — return 30 Indian foods as the default browsable catalog
+    const foods = await Food.find({ brand: 'Indian' }).sort({ name: 1 }).limit(30);
+    if (foods.length > 0) return res.json(foods);
+    // Fallback: any 30 foods if no Indian ones are seeded yet
+    const fallback = await Food.find().limit(30);
+    res.json(fallback);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

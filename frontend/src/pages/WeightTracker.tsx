@@ -4,6 +4,7 @@ import {
 } from 'recharts';
 import { Scale, Calendar, TrendingDown } from 'lucide-react';
 import api from '../api';
+import { useAlert } from '../context/AlertContext';
 
 const WeightTracker: React.FC = () => {
   const [weight, setWeight] = useState('');
@@ -11,7 +12,7 @@ const WeightTracker: React.FC = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [success, setSuccess] = useState('');
+  const { showAlert } = useAlert();
 
   const fetchWeightData = async () => {
     try {
@@ -37,15 +38,18 @@ const WeightTracker: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccess('');
     const parsedWeight = parseFloat(weight);
     if (isNaN(parsedWeight) || parsedWeight <= 0) return;
 
     try {
       await api.post('/api/weight', { date, weight: parsedWeight });
-      setSuccess('Weight logged successfully!');
+      showAlert({
+        type: 'success',
+        title: 'Weight Logged',
+        body: 'Your changes have been saved beautifully.',
+      });
       setWeight('');
-      fetchWeightData(); // Reload history and profile metrics
+      fetchWeightData();
     } catch (err) {
       console.error(err);
     }
@@ -105,11 +109,6 @@ const WeightTracker: React.FC = () => {
         <div className="glass p-6 rounded-3xl bg-white/35">
           <h3 className="font-extrabold text-base mb-6 text-slate-800">Log New Weight</h3>
 
-          {success && (
-            <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 text-xs font-bold rounded-xl text-center">
-              {success}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

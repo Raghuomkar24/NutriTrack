@@ -104,3 +104,37 @@ exports.getUserProfile = async (req, res) => {
     res.status(404).json({ message: 'User not found' });
   }
 };
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    let { email, newPassword } = req.body;
+    if (email) email = email.trim().toLowerCase();
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required.' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with that email address.' });
+    }
+
+    // Step 1: just verify email exists
+    if (!newPassword) {
+      return res.status(200).json({ message: 'Email verified. Please enter your new password.' });
+    }
+
+    // Step 2: update the password
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successfully. You can now log in.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -23,6 +23,12 @@ import Admin from './pages/Admin';
 import Goals from './pages/Goals';
 
 const App: React.FC = () => {
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem('theme-preference') || 'sunset';
+    document.documentElement.classList.remove('theme-sunset', 'theme-ocean', 'theme-forest');
+    document.documentElement.classList.add(`theme-${savedTheme}`);
+  }, []);
+
   return (
     <Router>
       <Routes>

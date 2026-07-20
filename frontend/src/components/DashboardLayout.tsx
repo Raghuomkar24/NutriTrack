@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, User, Utensils, Droplet, Scale, 
-  Dumbbell, MessageSquare, BookOpen, LogOut, Menu, X, Bell, Shield, Map 
+  Dumbbell, MessageSquare, BookOpen, LogOut, Menu, X, Bell, Shield, Map, Leaf
 } from 'lucide-react';
 import api from '../api';
 import Toast from './Toast';
@@ -113,7 +113,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Sidebar for Desktop */}
       <aside className="w-64 glass border-r border-white/40 hidden md:flex flex-col z-10 shadow-sm rounded-none">
         <div className="p-6 border-b border-slate-300 flex items-center gap-3">
-          <span className="text-3xl">🥑</span>
+          <div className="w-10 h-10 rounded-2xl bg-primary-50 border border-primary-200 text-primary-655 flex items-center justify-center flex-shrink-0 shadow-sm">
+            <Leaf className="stroke-[2.5]" size={20} />
+          </div>
           <div>
             <h1 className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
               NutriTrack Pro
@@ -172,7 +174,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Mobile Top Nav */}
       <header className="md:hidden glass border-b border-slate-300 h-16 flex items-center justify-between px-4 z-20 rounded-none">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">🥑</span>
+          <div className="w-8 h-8 rounded-xl bg-primary-50 border border-primary-200 text-primary-655 flex items-center justify-center flex-shrink-0 shadow-xs">
+            <Leaf className="stroke-[2.5]" size={16} />
+          </div>
           <span className="font-extrabold text-lg bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
             NutriTrack Pro
           </span>
@@ -212,7 +216,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </button>
 
             <div className="flex items-center gap-3 pb-6 border-b border-slate-300 mb-6">
-              <span className="text-3xl">🥑</span>
+              <div className="w-10 h-10 rounded-2xl bg-primary-50 border border-primary-200 text-primary-655 flex items-center justify-center flex-shrink-0 shadow-sm">
+                <Leaf className="stroke-[2.5]" size={20} />
+              </div>
               <div>
                 <h1 className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
                   NutriTrack Pro

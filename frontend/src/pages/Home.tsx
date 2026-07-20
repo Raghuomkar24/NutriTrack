@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Droplet, Award, Plus, Trash2, Sparkles, ChevronRight, Download, Utensils 
+  Droplet, Award, Plus, Trash2, Sparkles, ChevronRight, Download, Utensils, Crown, HelpCircle 
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -60,6 +60,10 @@ const Home: React.FC = () => {
   const [waterCelebrated, setWaterCelebrated] = useState(false);
 
   const [waterSloshing, setWaterSloshing] = useState(false);
+  const [waterPulsing, setWaterPulsing] = useState(false);
+  const [waterSwelling, setWaterSwelling] = useState(false);
+  const [waterTextScaling, setWaterTextScaling] = useState(false);
+  const [waterSplashParticles, setWaterSplashParticles] = useState<{ id: number; x: number; y: number; dx: string; dy: string; color: string }[]>([]);
   const prevCaloriePercent = useRef(0);
   const prevWaterMl = useRef(0);
 
@@ -68,12 +72,36 @@ const Home: React.FC = () => {
   const sleepGoal = 8;
   const sleepPercent = Math.min(100, (sleepHours / sleepGoal) * 100);
 
-  const [exercisesChecklist, setExercisesChecklist] = useState([
-    { id: 1, name: 'Early Morning Yoga', duration: '30 mins Daily', completed: false, category: 'Yoga' },
-    { id: 2, name: 'Daily Steps Goal', duration: '6,200 steps', completed: false, category: 'Walk' },
-    { id: 3, name: 'Strength Workout', duration: '45 mins Gym', completed: false, category: 'Gym' },
-    { id: 4, name: 'Evening Walk', duration: '20 mins Walk', completed: false, category: 'Walk' },
-  ]);
+  const [exercisesChecklist, setExercisesChecklist] = useState(() => {
+    const saved = localStorage.getItem('completed-exercises-ids');
+    const completedIds = saved ? JSON.parse(saved) : [];
+    const base = [
+      { id: 1, name: 'Early Morning Yoga', duration: '30 mins Daily', completed: false, category: 'Yoga' },
+      { id: 2, name: 'Daily Steps Goal', duration: '6,200 steps', completed: false, category: 'Walk' },
+      { id: 3, name: 'Strength Workout', duration: '45 mins Gym', completed: false, category: 'Gym' },
+      { id: 4, name: 'Evening Walk', duration: '20 mins Walk', completed: false, category: 'Walk' },
+    ];
+    return base.map(item => completedIds.includes(item.id) ? { ...item, completed: true } : item);
+  });
+
+  const handleToggleChecklist = (id: number) => {
+    setExercisesChecklist(prev => {
+      const updated = prev.map(e => e.id === id ? { ...e, completed: true } : e);
+      const completedIds = updated.filter(e => e.completed).map(e => e.id);
+      localStorage.setItem('completed-exercises-ids', JSON.stringify(completedIds));
+      return updated;
+    });
+    // Trigger celebration confetti
+    triggerCalorieConfetti();
+  };
+
+  const [deleteMealId, setDeleteMealId] = useState<number | null>(null);
+
+  const handleThemeChange = (themeName: string) => {
+    document.documentElement.classList.remove('theme-sunset', 'theme-ocean', 'theme-forest');
+    document.documentElement.classList.add(`theme-${themeName}`);
+    localStorage.setItem('theme-preference', themeName);
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -146,6 +174,30 @@ const Home: React.FC = () => {
 
   const handleAddWater = async (amount: number) => {
     if (!summary) return;
+
+    // Trigger pulse, swell, and text scaling states
+    setWaterPulsing(true);
+    setWaterSwelling(true);
+    setWaterTextScaling(true);
+    setTimeout(() => {
+      setWaterPulsing(false);
+      setWaterSwelling(false);
+      setWaterTextScaling(false);
+    }, 600);
+
+    // Create water splash particles centered above the text inside the circular bubble (56, 40)
+    const splashColors = ['#A2D2DF', '#81B5CA', '#FFF1E6', '#FF9E8A'];
+    const newParticles = Array.from({ length: 6 }, (_, i) => ({
+      id: Date.now() + i,
+      x: 56 + (Math.random() - 0.5) * 30,
+      y: 40 + (Math.random() - 0.5) * 10,
+      dx: `${(Math.random() - 0.5) * 70}px`,
+      dy: `${-Math.random() * 40 - 20}px`,
+      color: splashColors[i % splashColors.length],
+    }));
+    setWaterSplashParticles(newParticles);
+    setTimeout(() => setWaterSplashParticles([]), 750);
+
     try {
       const newAmount = summary.waterConsumedMl + amount;
       const res = await api.post('/api/water', { date, amountMl: newAmount });
@@ -162,6 +214,7 @@ const Home: React.FC = () => {
   const handleDeleteMeal = async (mealId: number) => {
     try {
       await api.delete(`/api/meals/${mealId}`);
+      setDeleteMealId(null);
       fetchDashboardData(); // Refresh summary calculations
     } catch (err) {
       console.error(err);
@@ -218,32 +271,75 @@ const Home: React.FC = () => {
     window.open(`/api/reports/download?days=7&token=${token}`, '_blank');
   };
 
+  const dashboardGlasses = Math.min(8, Math.round((summary?.waterConsumedMl || 0) / 250));
+  const dashboardWaterRatio = dashboardGlasses / 8;
+  const dStartR = Math.round(162 + (184 - 162) * dashboardWaterRatio);
+  const dStartG = Math.round(210 + (225 - 210) * dashboardWaterRatio);
+  const dStartB = Math.round(223 + (212 - 223) * dashboardWaterRatio);
+  const dEndR = Math.round(129 + (133 - 129) * dashboardWaterRatio);
+  const dEndG = Math.round(181 + (199 - 181) * dashboardWaterRatio);
+  const dEndB = Math.round(202 + (183 - 202) * dashboardWaterRatio);
+  const dashAquaTealStart = `rgb(${dStartR}, ${dStartG}, ${dStartB})`;
+  const dashAquaTealEnd = `rgb(${dEndR}, ${dEndG}, ${dEndB})`;
+
   return (
     <div className="space-y-8 pb-12">
-      {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-up" style={{ animationDelay: '0ms' }}>
-        <div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-800">
-            Hi, {JSON.parse(localStorage.getItem('user') || '{}').name || 'John'}!
-          </h2>
-          <p className="text-slate-500 text-sm mt-1 font-semibold">Here is your nutritional breakdown for today.</p>
+      {/* Welcome Header with Profile Look & Theme Options */}
+      <div className="glass p-6 rounded-3xl border border-white/50 bg-white/20 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-up" style={{ animationDelay: '0ms' }}>
+        <div className="flex items-center gap-4 text-left">
+          {/* User profile avatar with crown */}
+          <div className="relative flex-shrink-0">
+            <div className="w-14 h-14 rounded-2xl border border-white/60 bg-white/40 overflow-hidden flex items-center justify-center shadow-md">
+              <div className="w-full h-full bg-gradient-to-tr from-[#FFF0EB] to-[#FFE3D4] flex items-center justify-center">
+                <span className="font-black text-lg text-[#B56A45]">
+                  {(JSON.parse(localStorage.getItem('user') || '{}').name || 'Julia').substring(0, 2).toUpperCase()}
+                </span>
+              </div>
+            </div>
+            <Crown size={16} className="text-[#F4C542] fill-[#F4C542] absolute -top-2.5 -right-2 rotate-12 drop-shadow-sm animate-pulse" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-800">
+              Hi, {JSON.parse(localStorage.getItem('user') || '{}').name || 'Julia'}!
+            </h2>
+            <p className="text-slate-500 text-xs font-bold mt-0.5">Here is your nutritional breakdown for today.</p>
+          </div>
         </div>
 
-        <div className="flex gap-3">
-          <button
-            onClick={handleDownloadReport}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white/50 hover:bg-white/80 border border-slate-300 text-slate-650 text-xs font-bold rounded-xl shadow-sm transition duration-200 active:scale-95"
-          >
-            <Download size={14} />
-            <span>Download Report</span>
-          </button>
-          <Link
-            to="/dashboard/log-meal"
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold rounded-xl shadow-card transition duration-200 active:scale-95"
-          >
-            <Plus size={14} />
-            <span>Log a Meal</span>
-          </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Theme Selector Widget */}
+          <div className="flex items-center gap-1.5 bg-white/50 border border-white/70 p-1.5 rounded-2xl shadow-sm">
+            {[
+              { id: 'sunset', color: '#B56A45', label: 'Sunset' },
+              { id: 'ocean', color: '#2C7DA0', label: 'Ocean' },
+              { id: 'forest', color: '#4E8D7C', label: 'Forest' }
+            ].map(theme => (
+              <button
+                key={theme.id}
+                onClick={() => handleThemeChange(theme.id)}
+                className="w-5 h-5 rounded-full border border-white/80 shadow-xs cursor-pointer active:scale-90 transition-all hover:scale-110"
+                style={{ backgroundColor: theme.color }}
+                title={`${theme.label} Theme`}
+              />
+            ))}
+          </div>
+
+          <div className="flex gap-2.5">
+            <button
+              onClick={handleDownloadReport}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/50 hover:bg-white/85 border border-slate-300 text-slate-650 text-xs font-bold rounded-xl shadow-sm transition duration-200 active:scale-95"
+            >
+              <Download size={14} />
+              <span>Report</span>
+            </button>
+            <Link
+              to="/dashboard/log-meal"
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#85C7B7] hover:bg-[#6FAFA1] text-white text-xs font-bold rounded-xl shadow-card transition duration-200 active:scale-95"
+            >
+              <Plus size={14} />
+              <span>Log Meal</span>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -434,47 +530,130 @@ const Home: React.FC = () => {
           
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-extrabold text-base text-slate-800">Water Intake</h3>
-            <Droplet className="text-[#81b5ca]" size={20} />
+            <Droplet className="text-[#014F86]" size={20} />
           </div>
 
           <div className="flex items-center gap-6 mb-6 justify-center">
-            {/* Animated Glass Container */}
-            <div className="relative w-20 h-28 border-4 border-slate-350/50 rounded-b-3xl rounded-t-sm overflow-hidden bg-white/20 shadow-inner flex items-end">
+            {/* Circular Wave Bubble Tracker */}
+            <div className={`relative w-28 h-28 rounded-full border-4 border-[#014F86]/25 overflow-hidden bg-white/35 shadow-inner flex flex-col justify-end items-center group hover:scale-105 transition-all duration-300 ${
+              waterSwelling ? 'scale-105 border-[#014F86]/45' : ''
+            }`}>
+              
               {/* Rising Water Level */}
               <div
-                className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#81b5ca] to-[#bce3f2] overflow-hidden ${
+                className={`w-full relative overflow-hidden flex flex-col justify-end ${
                   waterSloshing ? 'animate-water-slosh' : ''
                 }`}
                 style={{
                   height: `${Math.min(100, ((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100)}%`,
-                  transition: 'height 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                  background: `linear-gradient(180deg, ${dashAquaTealStart} 0%, ${dashAquaTealEnd} 100%)`,
+                  transition: 'height 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                 }}
               >
-                {/* Rotating wave overlay layers */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[240%] h-[240%] bg-white/70 rounded-[40%] -translate-y-[93%] animate-[spin_6s_linear_infinite]" style={{ transformOrigin: '50% 50%' }}></div>
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[245%] h-[245%] bg-[#FFF1E6]/75 rounded-[38%] -translate-y-[91%] animate-[spin_10s_linear_infinite]" style={{ transformOrigin: '48% 52%' }}></div>
+                {/* Layered Animated Wave SVGs */}
+                {((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100 > 0 && ((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100 < 100 && (
+                  <>
+                    <svg 
+                      className="absolute left-0 right-0 w-[200%] h-6 text-[#2C7DA0]/35 fill-current -top-5 animate-water-wave"
+                      viewBox="0 0 1200 120"
+                      preserveAspectRatio="none"
+                    >
+                      <path d="M0,60 C150,100 350,20 500,60 C650,100 850,20 1000,60 C1150,100 1350,20 1500,60 L1500,120 L0,120 Z" />
+                    </svg>
+                    <svg 
+                      className="absolute left-0 right-0 w-[200%] h-6 text-[#014F86]/20 fill-current -top-4 animate-water-wave-slow"
+                      viewBox="0 0 1200 120"
+                      preserveAspectRatio="none"
+                    >
+                      <path d="M0,50 C150,10 350,90 500,50 C650,10 850,90 1000,50 C1150,10 1350,90 1500,50 L1500,120 L0,120 Z" />
+                    </svg>
+                  </>
+                )}
+
+                {/* Floating Bubbles */}
+                {((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100 > 5 && (
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute bottom-2 left-4 w-1.5 h-1.5 bg-white/20 rounded-full animate-bubble-up-1"></div>
+                    <div className="absolute bottom-6 right-6 w-1 h-1 bg-white/30 rounded-full animate-bubble-up-2"></div>
+                    <div className="absolute bottom-10 left-8 w-2 h-2 bg-white/10 rounded-full animate-bubble-up-3"></div>
+                  </div>
+                )}
+              </div>
+
+              {/* Warm peach refraction pulse overlay */}
+              <div 
+                className={`absolute inset-0 bg-[#FFE3D4] mix-blend-color-dodge pointer-events-none z-20 transition-opacity duration-500 rounded-full ${
+                  waterPulsing ? 'opacity-45' : 'opacity-0'
+                }`}
+              />
+
+              {/* Momentary sparkles on pulse */}
+              {waterPulsing && (
+                <>
+                  <Sparkles size={14} className="absolute top-4 left-6 text-white animate-bounce pointer-events-none z-30" />
+                  <Sparkles size={10} className="absolute bottom-5 right-5 text-[#FFE3D4] animate-pulse pointer-events-none z-30" />
+                </>
+              )}
+
+              {/* Dynamic Centered Status Overlay */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+                <Droplet 
+                  size={22} 
+                  className={`transition-colors duration-500 ${
+                    ((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100 > 45 
+                      ? 'text-white' 
+                      : 'text-[#014F86]'
+                  }`} 
+                />
+                <span 
+                  className={`text-xs font-black transition-colors duration-500 mt-0.5 ${
+                    ((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100 > 60 
+                      ? 'text-white' 
+                      : 'text-slate-800'
+                  }`}
+                >
+                  {Math.round(Math.min(100, ((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100))}%
+                </span>
+              </div>
+
+              {/* Splash Particles Overlay inside the bubble */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden z-30">
+                {waterSplashParticles.map(p => (
+                  <span
+                    key={p.id}
+                    className="absolute w-1.5 h-1.5 rounded-full animate-particle"
+                    style={{
+                      left: `${p.x}px`,
+                      top: `${p.y}px`,
+                      backgroundColor: p.color,
+                      '--dx': p.dx,
+                      '--dy': p.dy,
+                    } as React.CSSProperties}
+                  />
+                ))}
               </div>
             </div>
 
             <div>
-              <p className={`text-4xl font-extrabold transition-colors duration-500 ${
-                (summary?.waterConsumedMl || 0) >= (summary?.waterGoal || 2500)
-                  ? 'text-primary-600' : 'text-[#81b5ca]'
-              }`}><AnimatedNumber value={summary?.waterConsumedMl || 0} /> <span className="text-lg font-medium text-slate-500">ml</span></p>
-              <p className="text-xs text-slate-500 font-bold mt-1">Goal: {summary?.waterGoal || 2500} ml</p>
+              <p className={`text-4xl font-extrabold transition-all duration-300 ${
+                waterTextScaling ? 'scale-110 text-primary-655' : 'scale-100 text-[#014F86]'
+              }`}>
+                {Math.min(8, Math.round((summary?.waterConsumedMl || 0) / 250))} <span className="text-lg font-bold text-slate-500">/ 8</span>
+              </p>
+              <p className="text-xs text-slate-550 font-bold mt-1">Goal: 8 Glasses</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => handleAddWater(250)}
-              className="py-2.5 bg-blue-50/50 hover:bg-blue-100 border border-blue-200 text-xs font-bold rounded-xl text-blue-600 transition-all active:scale-95"
+              className="py-2.5 bg-blue-50/70 hover:bg-blue-100/90 border border-blue-200 text-xs font-bold rounded-xl text-[#014F86] transition-all active:scale-95 shadow-sm"
             >
               +250ml Glass
             </button>
             <button
               onClick={() => handleAddWater(500)}
-              className="py-2.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-xs font-bold rounded-xl text-blue-600 transition-all active:scale-95"
+              className="py-2.5 bg-blue-100/50 hover:bg-blue-200/70 border border-[#2C7DA0]/30 text-xs font-bold rounded-xl text-[#014F86] transition-all active:scale-95 shadow-sm"
             >
               +500ml Bottle
             </button>
@@ -494,31 +673,32 @@ const Home: React.FC = () => {
                 <div 
                   key={item.id} 
                   className={`p-3.5 glass rounded-2xl flex items-center justify-between gap-4 transition-all duration-350 ${
-                    item.completed ? 'opacity-60 bg-white/20' : 'opacity-100'
+                    item.completed ? 'opacity-80 bg-emerald-50/20 border-emerald-100/30' : 'opacity-100'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => {
-                        setExercisesChecklist(prev => prev.map(e => e.id === item.id ? { ...e, completed: !e.completed } : e));
-                      }}
+                      onClick={() => handleToggleChecklist(item.id)}
+                      disabled={item.completed}
                       className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
                         item.completed 
-                          ? 'bg-primary-500 border-primary-500 text-white animate-checkbox-spring' 
-                          : 'border-slate-350 hover:border-slate-500 bg-white/30'
+                          ? 'bg-emerald-500 border-emerald-500 text-white cursor-default' 
+                          : 'border-slate-350 hover:border-slate-500 bg-white/30 cursor-pointer active:scale-90'
                       }`}
                     >
                       {item.completed && (
-                        <svg className="w-3.5 h-3.5 stroke-current" viewBox="0 0 24 24" fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <svg className="w-3.5 h-3.5 stroke-current" viewBox="0 0 24 24" fill="none" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
                       )}
                     </button>
                     <div>
-                      <p className={`text-xs font-bold transition-all ${item.completed ? 'strike-through-text active' : 'strike-through-text text-slate-850'}`}>
+                      <p className={`text-xs font-bold text-left transition-all ${item.completed ? 'line-through text-emerald-800' : 'text-slate-850'}`}>
                         {item.name}
                       </p>
-                      <p className="text-[10px] text-slate-500 font-bold mt-0.5">{item.duration}</p>
+                      <p className="text-[10px] text-slate-550 font-bold mt-0.5 text-left">
+                        {item.completed ? 'Completed (resets in 24h)' : item.duration}
+                      </p>
                     </div>
                   </div>
                   <span className="text-lg">{item.category === 'Yoga' ? '🧘‍♀️' : item.category === 'Walk' ? '🚶‍♂️' : '🏋️'}</span>
@@ -527,8 +707,16 @@ const Home: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-350 flex justify-between items-center text-xs font-bold text-slate-500">
-            <span>Completed Today:</span>
+          <div className="mt-4 pt-4 border-t border-slate-355 flex justify-between items-center text-xs font-bold text-slate-500">
+            <button
+              onClick={() => {
+                setExercisesChecklist(prev => prev.map(e => ({ ...e, completed: false })));
+                localStorage.removeItem('completed-exercises-ids');
+              }}
+              className="text-[9px] uppercase tracking-wider text-slate-400 hover:text-slate-655 underline font-bold"
+            >
+              Reset Plan
+            </button>
             <span className="text-primary-600">{exercisesChecklist.filter(e => e.completed).length} / {exercisesChecklist.length}</span>
           </div>
         </div>
@@ -637,7 +825,7 @@ const Home: React.FC = () => {
                       </p>
                     </div>
                     <button
-                      onClick={() => handleDeleteMeal(meal.id)}
+                      onClick={() => setDeleteMealId(meal.id)}
                       className="p-2 text-slate-500 hover:text-primary-600 hover:bg-primary-50/50 rounded-xl transition"
                     >
                       <Trash2 size={16} />
@@ -701,6 +889,37 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Meal Confirmation Modal */}
+      {deleteMealId !== null && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="w-full max-w-sm bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-2xl animate-elastic-drop flex flex-col items-center text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-55 border border-red-200 flex items-center justify-center text-red-500 shadow-sm shadow-red-500/10 animate-bounce">
+              <HelpCircle size={22} className="text-red-550" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-black text-slate-800">Delete logged meal?</h3>
+              <p className="text-xs text-slate-550 font-bold leading-relaxed">
+                Are you sure you want to delete this meal log entry? Your consumed calories and macros for today will be updated.
+              </p>
+            </div>
+            <div className="flex gap-3 w-full pt-2">
+              <button
+                onClick={() => setDeleteMealId(null)}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-205 text-slate-650 font-bold text-xs rounded-xl transition duration-205"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteMeal(deleteMealId)}
+                className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white font-extrabold text-xs rounded-xl shadow-md transition duration-205"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

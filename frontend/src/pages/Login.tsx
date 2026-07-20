@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import Toast from '../components/Toast';
+import { Leaf } from 'lucide-react';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -57,7 +58,9 @@ const Login: React.FC = () => {
 
       <div className="w-full max-w-md glass p-8 rounded-3xl border border-white/50 shadow-2xl relative z-10">
         <div className="text-center mb-8">
-          <span className="text-4xl">🥑</span>
+          <div className="mx-auto w-12 h-12 rounded-2xl bg-primary-50 border border-primary-200 text-primary-655 flex items-center justify-center shadow-md shadow-primary-500/10 mb-4 hover:scale-105 transition-transform duration-200">
+            <Leaf size={24} className="stroke-[2.5]" />
+          </div>
           <h2 className="text-3xl font-extrabold tracking-tight mt-2 bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
             Welcome Back
           </h2>

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
+import { useAlert } from '../context/AlertContext';
 
 const Profile: React.FC = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const { showAlert } = useAlert();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -60,21 +60,26 @@ const Profile: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setError('');
-    setSuccess('');
 
     try {
       const res = await api.put('/api/profile', formData);
       setProfile(res.data);
-      setSuccess('Profile updated successfully!');
-      
+      showAlert({
+        type: 'success',
+        title: 'Profile Updated',
+        body: 'Your changes have been saved beautifully.',
+      });
       // Update local storage user name
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       user.name = res.data.name;
       localStorage.setItem('user', JSON.stringify(user));
     } catch (err) {
       console.error(err);
-      setError('Failed to save profile details.');
+      showAlert({
+        type: 'delete',
+        title: 'Save Failed',
+        body: 'Could not update profile. Please try again.',
+      });
     } finally {
       setSaving(false);
     }
@@ -150,17 +155,7 @@ const Profile: React.FC = () => {
         <div className="lg:col-span-2 glass p-8 rounded-3xl border border-slate-800">
           <h3 className="font-extrabold text-base mb-6 text-slate-300">Modify Body Profile</h3>
 
-          {success && (
-            <div className="mb-6 p-3 bg-green-500/10 border border-green-500/20 text-green-400 text-xs rounded-xl text-center">
-              {success}
-            </div>
-          )}
 
-          {error && (
-            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl text-center">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSave} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

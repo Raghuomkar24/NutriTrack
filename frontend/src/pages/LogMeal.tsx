@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Search, Plus, Trash2, Camera, Scan, Sparkles, X, ChevronRight, CheckCircle2, Sliders 
+  Search, Plus, Trash2, Camera, Scan, Sparkles, X, ChevronRight, CheckCircle2, Sliders,
+  Calendar, UtensilsCrossed, Coffee, Sun, Moon, Cookie
 } from 'lucide-react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api';
+import { useAlert } from '../context/AlertContext';
 
 interface LoggedItem {
   id: number;
@@ -20,9 +22,22 @@ interface LoggedItem {
   unitMultiplier: number; // How many grams per unit
 }
 
+const MEAL_ORDER = ['BREAKFAST', 'MORNING_SNACK', 'LUNCH', 'EVENING_SNACK', 'DINNER'];
+
+const MEAL_META: Record<string, { label: string; icon: React.ReactNode; color: string; border: string; bg: string }> = {
+  BREAKFAST:     { label: 'Breakfast',      icon: <Coffee size={15} />,         color: 'text-amber-600',   border: 'border-amber-200',  bg: 'bg-amber-50/60' },
+  MORNING_SNACK: { label: 'Morning Snack',  icon: <Cookie size={15} />,         color: 'text-orange-500',  border: 'border-orange-200', bg: 'bg-orange-50/60' },
+  LUNCH:         { label: 'Lunch',          icon: <Sun size={15} />,            color: 'text-primary-600', border: 'border-primary-200',bg: 'bg-primary-50/60' },
+  EVENING_SNACK: { label: 'Evening Snack', icon: <Cookie size={15} />,         color: 'text-rose-500',    border: 'border-rose-200',   bg: 'bg-rose-50/60' },
+  DINNER:        { label: 'Dinner',         icon: <Moon size={15} />,           color: 'text-indigo-600',  border: 'border-indigo-200', bg: 'bg-indigo-50/60' },
+};
+
 const LogMeal: React.FC = () => {
   const [mealType, setMealType] = useState('BREAKFAST');
   const [date] = useState(new Date().toISOString().split('T')[0]);
+  const [diaryDate, setDiaryDate] = useState(new Date().toISOString().split('T')[0]);
+  const [diaryMeals, setDiaryMeals] = useState<any[]>([]);
+  const [diaryLoading, setDiaryLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -40,11 +55,24 @@ const LogMeal: React.FC = () => {
   const [recognizedMeal, setRecognizedMeal] = useState<any>(null);
 
   const navigate = useNavigate();
+  const { showAlert, confirmDelete } = useAlert();
+
+  const fetchDiary = useCallback(async (d: string) => {
+    setDiaryLoading(true);
+    try {
+      const res = await api.get(`/api/meals?date=${d}`);
+      setDiaryMeals(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDiaryLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // Fetch initial favorites & full catalog
     fetchCatalog();
     fetchFavorites();
+    fetchDiary(diaryDate);
   }, []);
 
   const fetchCatalog = async () => {
@@ -253,7 +281,28 @@ const LogMeal: React.FC = () => {
         }))
       };
       await api.post('/api/meals', payload);
-      navigate('/dashboard/home');
+      showAlert({
+        type: 'success',
+        title: 'Meal Logged',
+        body: 'Your changes have been saved beautifully.',
+      });
+      setSelectedItems([]);
+      fetchDiary(diaryDate);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteMeal = async (mealId: string) => {
+    const ok = await confirmDelete({
+      title: 'Remove Meal?',
+      body: 'This action cannot be undone. Are you sure?',
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/api/meals/${mealId}`);
+      showAlert({ type: 'delete', title: 'Meal Removed', body: 'The log has been permanently cleared.' });
+      fetchDiary(diaryDate);
     } catch (err) {
       console.error(err);
     }
@@ -569,7 +618,151 @@ const LogMeal: React.FC = () => {
         </div>
       </div>
 
-      {/* Barcode Scanner Modal Simulation */}
+      {/* ── Daily Diary Section ───────────────────────────────── */}
+      <div className="space-y-4">
+        {/* Header + Date Picker */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="text-xl font-extrabold tracking-tight text-slate-800 flex items-center gap-2">
+              <UtensilsCrossed size={20} className="text-primary-600" />
+              Daily Food Diary
+            </h3>
+            <p className="text-xs text-slate-500 font-semibold mt-0.5">Your saved meals grouped by category</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar size={15} className="text-slate-500" />
+            <input
+              type="date"
+              value={diaryDate}
+              onChange={(e) => {
+                setDiaryDate(e.target.value);
+                fetchDiary(e.target.value);
+              }}
+              className="px-3 py-2 rounded-xl glass-input text-xs font-bold text-slate-800 border border-slate-300 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Diary content */}
+        {diaryLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-8 h-8 border-4 border-primary-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (() => {
+          // Group meals by mealType
+          const grouped: Record<string, any[]> = {};
+          diaryMeals.forEach(meal => {
+            if (!grouped[meal.mealType]) grouped[meal.mealType] = [];
+            grouped[meal.mealType].push(meal);
+          });
+
+          const hasAny = Object.keys(grouped).length > 0;
+
+          if (!hasAny) {
+            return (
+              <div className="glass rounded-3xl border border-white/50 py-14 flex flex-col items-center justify-center text-center">
+                <UtensilsCrossed size={36} className="text-slate-300 mb-3" />
+                <p className="text-slate-500 font-bold text-sm">No meals logged for this date.</p>
+                <p className="text-slate-400 text-xs mt-1 font-medium">Stage items above and click "Log Meal to Diary".</p>
+              </div>
+            );
+          }
+
+          // Daily totals
+          const dayTotals = diaryMeals.reduce(
+            (acc, m) => ({ cal: acc.cal + m.totalCalories, prot: acc.prot + m.totalProtein, carbs: acc.carbs + m.totalCarbs, fat: acc.fat + m.totalFat }),
+            { cal: 0, prot: 0, carbs: 0, fat: 0 }
+          );
+
+          return (
+            <div className="space-y-4">
+              {/* Day totals bar */}
+              <div className="glass p-4 rounded-2xl border border-white/50 grid grid-cols-4 gap-4 text-center">
+                {[['Calories', Math.round(dayTotals.cal), 'kcal', 'text-primary-700'],
+                  ['Protein',  Math.round(dayTotals.prot),  'g',    'text-emerald-700'],
+                  ['Carbs',    Math.round(dayTotals.carbs), 'g',    'text-blue-700'],
+                  ['Fats',     Math.round(dayTotals.fat),   'g',    'text-orange-700'],
+                ].map(([label, val, unit, cls]) => (
+                  <div key={label as string}>
+                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">{label}</p>
+                    <p className={`text-base font-extrabold mt-0.5 ${cls}`}>{val}<span className="text-[10px] ml-0.5 font-semibold">{unit}</span></p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Meal category groups */}
+              {MEAL_ORDER.filter(mt => grouped[mt]).map(mt => {
+                const meta = MEAL_META[mt] || { label: mt, icon: null, color: 'text-slate-600', border: 'border-slate-200', bg: 'bg-slate-50/60' };
+                const meals = grouped[mt];
+                const groupCal = meals.reduce((s, m) => s + m.totalCalories, 0);
+
+                return (
+                  <motion.div
+                    key={mt}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+                    className="glass rounded-2xl border border-white/50 overflow-hidden"
+                  >
+                    {/* Category header */}
+                    <div className={`flex items-center justify-between px-5 py-3 ${meta.bg} border-b ${meta.border}`}>
+                      <div className={`flex items-center gap-2 font-extrabold text-sm ${meta.color}`}>
+                        {meta.icon}
+                        <span>{meta.label}</span>
+                      </div>
+                      <span className="text-xs font-bold text-slate-500">{Math.round(groupCal)} kcal total</span>
+                    </div>
+
+                    {/* Meal entries */}
+                    <div className="divide-y divide-white/30">
+                      {meals.map((meal: any) => (
+                        <div key={meal._id} className="px-5 py-3.5 bg-white/20 hover:bg-white/35 transition group">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              {/* Food items listed */}
+                              <div className="space-y-1">
+                                {meal.items.map((item: any, idx: number) => (
+                                  <div key={idx} className="flex items-center justify-between text-xs">
+                                    <span className="font-semibold text-slate-700 truncate pr-4">
+                                      {item.food?.name || 'Unknown food'}
+                                      <span className="text-slate-400 font-normal ml-1">({Math.round(item.quantity_g)}g)</span>
+                                    </span>
+                                    <span className="text-slate-500 font-bold flex-shrink-0">{Math.round(item.calories)} kcal</span>
+                                  </div>
+                                ))}
+                              </div>
+                              {/* Macro chips */}
+                              <div className="flex items-center gap-3 mt-2">
+                                <span className="text-[10px] font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">{Math.round(meal.totalCalories)} kcal</span>
+                                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">P {Math.round(meal.totalProtein)}g</span>
+                                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">C {Math.round(meal.totalCarbs)}g</span>
+                                <span className="text-[10px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full">F {Math.round(meal.totalFat)}g</span>
+                              </div>
+                              <p className="text-[9px] text-slate-400 mt-1 font-medium">
+                                {new Date(meal.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                            {/* Delete button */}
+                            <button
+                              onClick={() => handleDeleteMeal(meal._id)}
+                              className="flex-shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-[#C96A52] hover:bg-[rgba(255,168,150,0.15)] transition opacity-0 group-hover:opacity-100"
+                              title="Remove this meal"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          );
+        })()}
+      </div>
+
+
       {showScanner && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-[#463F3A]/60 backdrop-blur-sm" onClick={() => setShowScanner(false)}></div>

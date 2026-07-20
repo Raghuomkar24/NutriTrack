@@ -62,27 +62,14 @@ const seedDatabase = async () => {
       console.log('Demo users seeded successfully!');
     }
 
+    // Seed Indian foods if fewer than 50 exist
     const Food = require('../models/Food');
     const indianFoodCount = await Food.countDocuments({ brand: 'Indian' });
-    if (indianFoodCount === 0) {
-      console.log('Seeding initial food items (including Indian foods)...');
-      const foodsToSeed = [
-        { name: 'Roti (Whole Wheat)', brand: 'Indian', calories: 297, protein: 9, carbohydrates: 60, fat: 3, servingSize: '1 piece (40g)' },
-        { name: 'Chapati', brand: 'Indian', calories: 297, protein: 9, carbohydrates: 60, fat: 3, servingSize: '1 piece (40g)' },
-        { name: 'Dal (Lentils Cooked)', brand: 'Indian', calories: 116, protein: 9, carbohydrates: 20, fat: 0.4, servingSize: '1 cup (200g)' },
-        { name: 'Curd (Yogurt)', brand: 'Indian', calories: 98, protein: 3.5, carbohydrates: 11, fat: 4.3, servingSize: '1 cup (150g)' },
-        { name: 'Milk (Whole)', brand: 'Generic', calories: 61, protein: 3.2, carbohydrates: 4.8, fat: 3.3, servingSize: '1 cup (244ml)' },
-        { name: 'Fruit Juice (Mixed, Fresh)', brand: 'Generic', calories: 45, protein: 0.5, carbohydrates: 10, fat: 0.1, servingSize: '1 glass (200ml)' },
-        { name: 'Holige (Obbattu)', brand: 'Indian', calories: 320, protein: 5, carbohydrates: 55, fat: 10, servingSize: '1 piece (50g)' },
-        { name: 'Kadubu', brand: 'Indian', calories: 150, protein: 4, carbohydrates: 30, fat: 2, servingSize: '1 piece (60g)' },
-        { name: 'Poori', brand: 'Indian', calories: 300, protein: 6, carbohydrates: 35, fat: 15, servingSize: '1 piece (40g)' },
-        { name: 'Idli', brand: 'Indian', calories: 140, protein: 4, carbohydrates: 30, fat: 0.4, servingSize: '2 pieces (100g)' },
-        { name: 'Vada (Medu Vada)', brand: 'Indian', calories: 300, protein: 10, carbohydrates: 30, fat: 15, servingSize: '1 piece (50g)' },
-        { name: 'Dosa', brand: 'Indian', calories: 168, protein: 3.9, carbohydrates: 29, fat: 3.7, servingSize: '1 piece (80g)' },
-        { name: 'White Rice (Cooked)', brand: 'Indian', calories: 130, protein: 2.7, carbohydrates: 28, fat: 0.3, servingSize: '1 cup (158g)' }
-      ];
-      await Food.insertMany(foodsToSeed);
-      console.log('Indian foods seeded successfully!');
+    if (indianFoodCount < 50) {
+      const { INDIAN_FOODS } = require('./seedIndianFoods');
+      await Food.deleteMany({ brand: 'Indian' });
+      await Food.insertMany(INDIAN_FOODS);
+      console.log(`Seeded ${INDIAN_FOODS.length} Indian food items successfully!`);
     }
   } catch (error) {
     console.error('Error seeding database:', error);
