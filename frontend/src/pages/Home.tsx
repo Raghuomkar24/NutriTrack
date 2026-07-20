@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Droplet, Award, Plus, Trash2, Sparkles, ChevronRight, Download, Utensils, Crown, HelpCircle 
+  Droplet, Award, Plus, Trash2, Sparkles, ChevronRight, Download, Utensils, Crown, HelpCircle,
+  Calendar, TrendingUp, BarChart2, PieChart as PieChartIcon
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -50,8 +51,58 @@ const CONFETTI_COLORS = ['#FFE3D4', '#FFF1E6', '#FF9E8A', '#B56A45', '#F4F3EE'];
 const Home: React.FC = () => {
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [date] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [aiReminder, setAiReminder] = useState<string | null>(null);
+
+  // Historical summary state (Weekly / Monthly)
+  const [summaryTimeframe, setSummaryTimeframe] = useState<7 | 30>(7);
+  const [historicalData, setHistoricalData] = useState<any[]>([]);
+  const [historicalLoading, setHistoricalLoading] = useState(false);
+
+  const fetchHistoricalSummary = async (days: number, selectedDate: string) => {
+    setHistoricalLoading(true);
+    try {
+      const selectedEnd = new Date(selectedDate);
+      const hist = [];
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(selectedEnd);
+        d.setDate(selectedEnd.getDate() - i);
+        const dStr = d.toISOString().split('T')[0];
+
+        const [mealRes, waterRes, exerciseRes] = await Promise.all([
+          api.get(`/api/meals?date=${dStr}`).catch(() => ({ data: [] })),
+          api.get(`/api/water?date=${dStr}`).catch(() => ({ data: { amountMl: 0 } })),
+          api.get(`/api/exercise?date=${dStr}`).catch(() => ({ data: [] }))
+        ]);
+
+        const cConsumed = (mealRes.data || []).reduce((sum: number, m: any) => sum + (m.totalCalories || 0), 0);
+        const pConsumed = (mealRes.data || []).reduce((sum: number, m: any) => sum + (m.totalProtein || 0), 0);
+        const cbConsumed = (mealRes.data || []).reduce((sum: number, m: any) => sum + (m.totalCarbs || 0), 0);
+        const fConsumed = (mealRes.data || []).reduce((sum: number, m: any) => sum + (m.totalFat || 0), 0);
+        const wMl = waterRes.data?.amountMl || 0;
+        const eBurn = (exerciseRes.data || []).reduce((sum: number, e: any) => sum + (e.caloriesBurned || 0), 0);
+
+        hist.push({
+          date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          consumed: Math.round(cConsumed),
+          burned: Math.round(eBurn),
+          protein: Math.round(pConsumed),
+          carbs: Math.round(cbConsumed),
+          fat: Math.round(fConsumed),
+          water: wMl
+        });
+      }
+      setHistoricalData(hist);
+    } catch (err) {
+      console.error("Error loading historical summary data", err);
+    } finally {
+      setHistoricalLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistoricalSummary(summaryTimeframe, date);
+  }, [summaryTimeframe, date]);
   
   // Localized confettis
   const [calorieConfetti, setCalorieConfetti] = useState<{ x: number; y: number; color: string; delay: number }[]>([]);
@@ -311,6 +362,26 @@ const Home: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
+          {/* Calendar Date Picker Widget */}
+          <div className="flex items-center gap-2 bg-white/60 border border-white/80 px-3 py-2 rounded-2xl shadow-sm">
+            <Calendar size={16} className="text-primary-600" />
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => e.target.value && setDate(e.target.value)}
+              className="bg-transparent text-xs font-black text-slate-800 focus:outline-none cursor-pointer"
+            />
+            {date !== new Date().toISOString().split('T')[0] && (
+              <button
+                onClick={() => setDate(new Date().toISOString().split('T')[0])}
+                className="text-[10px] font-bold text-primary-600 hover:text-primary-700 bg-primary-50 px-2 py-0.5 rounded-lg border border-primary-200 shadow-2xs transition active:scale-95"
+                title="Reset to today"
+              >
+                Today
+              </button>
+            )}
+          </div>
+
           {/* Theme Selector Widget */}
           <div className="flex items-center gap-1.5 bg-white/50 border border-white/70 p-1.5 rounded-2xl shadow-sm">
             {[
@@ -889,6 +960,169 @@ const Home: React.FC = () => {
                 Fats ({pieData.length > 0 ? Math.round((fatConsumed * 9 / (proteinConsumed*4 + carbsConsumed*4 + fatConsumed*9)) * 100) : 25}%)
               </span>
               <span className="text-slate-700">{Math.round(fatConsumed * 9)} kcal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Visual Weekly & Monthly Historical Summary Section ─── */}
+      <div className="card-light p-6 md:p-8 rounded-3xl space-y-6 animate-fade-up border border-white/60 shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-primary-600 mb-1">
+              <TrendingUp size={16} />
+              <span>Historical Analytics</span>
+            </div>
+            <h3 className="text-xl font-extrabold text-slate-800">
+              {summaryTimeframe === 7 ? 'Weekly' : 'Monthly'} Performance Summary
+            </h3>
+            <p className="text-slate-500 text-xs font-bold mt-0.5">
+              Visual histogram of caloric intake vs exercise burn & aggregate macro distribution over {summaryTimeframe} days.
+            </p>
+          </div>
+
+          {/* Timeframe selector tabs */}
+          <div className="flex bg-white/60 border border-white/80 p-1 rounded-2xl shadow-xs self-start md:self-auto">
+            <button
+              onClick={() => setSummaryTimeframe(7)}
+              className={`px-4 py-2 rounded-xl text-xs font-extrabold transition duration-200 ${
+                summaryTimeframe === 7
+                  ? 'bg-primary-500 text-white shadow-md'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              7 Days (Weekly)
+            </button>
+            <button
+              onClick={() => setSummaryTimeframe(30)}
+              className={`px-4 py-2 rounded-xl text-xs font-extrabold transition duration-200 ${
+                summaryTimeframe === 30
+                  ? 'bg-primary-500 text-white shadow-md'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              30 Days (Monthly)
+            </button>
+          </div>
+        </div>
+
+        {/* KPI Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white/40 border border-white/70 p-4 rounded-2xl text-left shadow-xs">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Avg Daily Intake</p>
+            <p className="text-xl font-black text-slate-800 mt-1">
+              {historicalData.length > 0 
+                ? Math.round(historicalData.reduce((acc, c) => acc + c.consumed, 0) / historicalData.length) 
+                : 0} <span className="text-xs font-semibold text-slate-500">kcal/day</span>
+            </p>
+          </div>
+
+          <div className="bg-white/40 border border-white/70 p-4 rounded-2xl text-left shadow-xs">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Water Logged</p>
+            <p className="text-xl font-black text-blue-600 mt-1">
+              {(historicalData.reduce((acc, c) => acc + c.water, 0) / 1000).toFixed(1)} <span className="text-xs font-semibold text-slate-500">Liters</span>
+            </p>
+          </div>
+
+          <div className="bg-white/40 border border-white/70 p-4 rounded-2xl text-left shadow-xs">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Active Burn</p>
+            <p className="text-xl font-black text-emerald-600 mt-1">
+              {historicalData.reduce((acc, c) => acc + c.burned, 0)} <span className="text-xs font-semibold text-slate-500">kcal burned</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Histogram Chart (Intake vs Burned) */}
+          <div className="lg:col-span-2 bg-white/40 border border-white/70 p-5 rounded-2xl">
+            <h4 className="font-extrabold text-sm text-slate-800 mb-4 flex items-center gap-2">
+              <BarChart2 size={16} className="text-primary-600" />
+              <span>Daily Caloric Intake vs. Exercise Burn Histogram</span>
+            </h4>
+            <div className="h-64 w-full">
+              {historicalLoading ? (
+                <div className="h-full flex items-center justify-center text-xs font-bold text-slate-400">Loading summary data...</div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={historicalData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false} />
+                    <XAxis dataKey="date" stroke="#8A817C" fontSize={10} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#8A817C" fontSize={10} tickLine={false} axisLine={false} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#ffffff', borderColor: 'rgba(255, 255, 255, 0.6)', color: '#463F3A', borderRadius: '12px', boxShadow: '0 10px 30px rgba(181, 106, 69, 0.08)' }} 
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', color: '#8A817C', fontWeight: 'bold' }} />
+                    <Bar dataKey="consumed" name="Consumed (kcal)" fill="#FF9E8A" radius={[4, 4, 0, 0]} barSize={summaryTimeframe === 7 ? 20 : 8} />
+                    <Bar dataKey="burned" name="Burned (kcal)" fill="#10b981" radius={[4, 4, 0, 0]} barSize={summaryTimeframe === 7 ? 20 : 8} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+
+          {/* Macro Aggregate Pie / Donut Chart */}
+          <div className="bg-white/40 border border-white/70 p-5 rounded-2xl flex flex-col justify-between">
+            <h4 className="font-extrabold text-sm text-slate-800 mb-2 flex items-center gap-2">
+              <PieChartIcon size={16} className="text-primary-600" />
+              <span>Aggregate Macro Distribution</span>
+            </h4>
+            <div className="h-44 w-full relative flex items-center justify-center">
+              {historicalLoading ? (
+                <div className="text-xs font-bold text-slate-400">Loading...</div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Protein', value: historicalData.reduce((a, c) => a + c.protein, 0) * 4, color: '#10b981' },
+                        { name: 'Carbohydrates', value: historicalData.reduce((a, c) => a + c.carbs, 0) * 4, color: '#3b82f6' },
+                        { name: 'Fats', value: historicalData.reduce((a, c) => a + c.fat, 0) * 9, color: '#f59e0b' }
+                      ].filter(d => d.value > 0)}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={42}
+                      outerRadius={62}
+                      paddingAngle={4}
+                      dataKey="value"
+                    >
+                      {[
+                        { name: 'Protein', value: historicalData.reduce((a, c) => a + c.protein, 0) * 4, color: '#10b981' },
+                        { name: 'Carbohydrates', value: historicalData.reduce((a, c) => a + c.carbs, 0) * 4, color: '#3b82f6' },
+                        { name: 'Fats', value: historicalData.reduce((a, c) => a + c.fat, 0) * 9, color: '#f59e0b' }
+                      ].filter(d => d.value > 0).map((entry, index) => (
+                        <Cell key={`hist-cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#ffffff', borderColor: 'rgba(255, 255, 255, 0.6)', color: '#463F3A', borderRadius: '12px', boxShadow: '0 10px 30px rgba(181, 106, 69, 0.08)' }} 
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+            <div className="space-y-1.5 text-xs font-bold text-slate-600 mt-2">
+              <div className="flex justify-between items-center">
+                <span className="text-[#10b981] flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-[#10b981] rounded-full"></span>
+                  Protein
+                </span>
+                <span className="text-slate-700">{historicalData.reduce((a, c) => a + c.protein, 0)}g</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-blue-600 flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  Carbs
+                </span>
+                <span className="text-slate-700">{historicalData.reduce((a, c) => a + c.carbs, 0)}g</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-amber-600 flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+                  Fats
+                </span>
+                <span className="text-slate-700">{historicalData.reduce((a, c) => a + c.fat, 0)}g</span>
+              </div>
             </div>
           </div>
         </div>
