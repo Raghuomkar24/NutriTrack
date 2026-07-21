@@ -29,7 +29,7 @@ const updateProfile = async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const { name, mobile, age, gender, height, weight, targetWeight, activityLevel, goal, diet } = req.body;
+    const { name, avatar, mobile, age, gender, height, weight, targetWeight, activityLevel, goal, diet } = req.body;
     
     // Recalculate macros
     let bmr = (10 * weight) + (6.25 * height) - (5 * age);
@@ -55,7 +55,9 @@ const updateProfile = async (req, res) => {
     const dailyCarbs = (dailyCalories - (dailyProtein * 4) - (dailyFat * 9)) / 4;
 
     user.profile = {
-      name, mobile, age, gender, height, weight, targetWeight, activityLevel, goal, diet: diet || user.profile.diet,
+      name,
+      avatar: avatar !== undefined ? avatar : user.profile.avatar,
+      mobile, age, gender, height, weight, targetWeight, activityLevel, goal, diet: diet || user.profile.diet,
       bmr, tdee, dailyCalories, bmi, dailyProtein, dailyFat, dailyCarbs
     };
     

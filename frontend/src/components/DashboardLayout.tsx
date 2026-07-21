@@ -19,8 +19,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user') || '{}'));
   const isAdmin = user.roles && user.roles.includes('ROLE_ADMIN');
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setUser(JSON.parse(localStorage.getItem('user') || '{}'));
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   useEffect(() => {
     // Fetch notifications
@@ -153,9 +161,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
         <div className="p-4 border-t border-slate-350 space-y-3">
           <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-600 to-primary-500 flex items-center justify-center font-bold text-white uppercase shadow-md shadow-primary-500/20">
-              {user.name ? user.name[0] : 'U'}
-            </div>
+            {user.avatar ? (
+              <img src={user.avatar} alt={user.name || 'User'} className="w-10 h-10 rounded-full object-cover border border-white/60 shadow-sm flex-shrink-0" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-600 to-primary-500 flex items-center justify-center font-bold text-white uppercase shadow-md shadow-primary-500/20 flex-shrink-0">
+                {user.name ? user.name[0] : 'U'}
+              </div>
+            )}
             <div className="truncate">
               <p className="text-sm font-semibold truncate text-slate-800">{user.name || 'User'}</p>
               <p className="text-xs text-slate-500 truncate">{user.email || 'user@email.com'}</p>
@@ -256,9 +268,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
             <div className="pt-4 border-t border-slate-300 mt-6 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-600 to-primary-500 flex items-center justify-center font-bold text-white uppercase">
-                  {user.name ? user.name[0] : 'U'}
-                </div>
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name || 'User'} className="w-10 h-10 rounded-full object-cover border border-white/60 shadow-sm flex-shrink-0" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-600 to-primary-500 flex items-center justify-center font-bold text-white uppercase flex-shrink-0">
+                    {user.name ? user.name[0] : 'U'}
+                  </div>
+                )}
                 <div className="truncate">
                   <p className="text-sm font-semibold truncate text-slate-800">{user.name || 'User'}</p>
                   <p className="text-xs text-slate-500 truncate">{user.email || 'user@email.com'}</p>

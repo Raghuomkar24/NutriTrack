@@ -54,6 +54,16 @@ const Home: React.FC = () => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [aiReminder, setAiReminder] = useState<string | null>(null);
 
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user') || '{}'));
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setUser(JSON.parse(localStorage.getItem('user') || '{}'));
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
   // Historical summary state (Weekly / Monthly)
   const [summaryTimeframe, setSummaryTimeframe] = useState<7 | 30>(7);
   const [historicalData, setHistoricalData] = useState<any[]>([]);
@@ -345,17 +355,21 @@ const Home: React.FC = () => {
           {/* User profile avatar with crown */}
           <div className="relative flex-shrink-0">
             <div className="w-14 h-14 rounded-2xl border border-white/60 bg-white/40 overflow-hidden flex items-center justify-center shadow-md">
-              <div className="w-full h-full bg-gradient-to-tr from-[#FFF0EB] to-[#FFE3D4] flex items-center justify-center">
-                <span className="font-black text-lg text-[#B56A45]">
-                  {(JSON.parse(localStorage.getItem('user') || '{}').name || 'Julia').substring(0, 2).toUpperCase()}
-                </span>
-              </div>
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.name || 'User'} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-tr from-[#FFF0EB] to-[#FFE3D4] flex items-center justify-center">
+                  <span className="font-black text-lg text-[#B56A45]">
+                    {(user.name || 'User').substring(0, 2).toUpperCase()}
+                  </span>
+                </div>
+              )}
             </div>
             <Crown size={16} className="text-[#F4C542] fill-[#F4C542] absolute -top-2.5 -right-2 rotate-12 drop-shadow-sm animate-pulse" />
           </div>
           <div>
             <h2 className="text-2xl font-extrabold tracking-tight text-slate-800">
-              Hi, {JSON.parse(localStorage.getItem('user') || '{}').name || 'Julia'}!
+              Hi, {user.name || 'User'}!
             </h2>
             <p className="text-slate-500 text-xs font-bold mt-0.5">Here is your nutritional breakdown for today.</p>
           </div>

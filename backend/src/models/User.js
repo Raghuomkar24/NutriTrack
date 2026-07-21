@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
   },
   profile: {
     name: { type: String, required: true },
+    avatar: String,
     mobile: String,
     age: Number,
     gender: String,

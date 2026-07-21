@@ -69,6 +69,7 @@ exports.registerUser = async (req, res) => {
         id: user._id,
         email: user.email,
         name: user.profile.name,
+        avatar: user.profile.avatar || '',
         roles: user.roles,
         token: generateToken(user._id)
       });
@@ -91,6 +92,7 @@ exports.authUser = async (req, res) => {
         id: user._id,
         email: user.email,
         name: user.profile.name,
+        avatar: user.profile.avatar || '',
         roles: user.roles,
         token: generateToken(user._id)
       });

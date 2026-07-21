@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import PopUpModal, { PopUpType } from '../components/PopUpModal';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Camera } from 'lucide-react';
 
 const Profile: React.FC = () => {
   const [profile, setProfile] = useState<any>(null);
@@ -37,6 +37,7 @@ const Profile: React.FC = () => {
 
   const [formData, setFormData] = useState({
     name: '',
+    avatar: '',
     mobile: '',
     age: 30,
     gender: 'MALE',
@@ -54,6 +55,7 @@ const Profile: React.FC = () => {
       setProfile(res.data);
       setFormData({
         name: res.data.name || '',
+        avatar: res.data.avatar || '',
         mobile: res.data.mobile || '',
         age: res.data.age || 30,
         gender: res.data.gender || 'MALE',
@@ -84,6 +86,41 @@ const Profile: React.FC = () => {
     }));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        showPopUp('File Too Large', 'Please select an image file under 5MB.', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Image = reader.result as string;
+        setFormData(prev => ({ ...prev, avatar: base64Image }));
+
+        try {
+          const res = await api.put('/api/profile', { ...formData, avatar: base64Image });
+          setProfile(res.data);
+          
+          // Update local storage user profile with avatar
+          const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+          localUser.avatar = base64Image;
+          localUser.name = res.data.name;
+          localStorage.setItem('user', JSON.stringify(localUser));
+
+          // Notify all components across dashboard
+          window.dispatchEvent(new Event('storage'));
+
+          showPopUp('Profile Picture Updated!', 'Your new profile picture has been saved successfully.', 'success');
+        } catch (err) {
+          console.error(err);
+          showPopUp('Upload Failed', 'Could not save profile picture. Please try again.', 'error');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // CREATE / UPDATE Profile CRUD operation
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,10 +130,12 @@ const Profile: React.FC = () => {
       const res = await api.put('/api/profile', formData);
       setProfile(res.data);
       
-      // Update local storage user name
+      // Update local storage user name & avatar
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       user.name = res.data.name;
+      user.avatar = res.data.avatar;
       localStorage.setItem('user', JSON.stringify(user));
+      window.dispatchEvent(new Event('storage'));
 
       // Trigger Pop Up message with OK button
       showPopUp(
@@ -117,6 +156,7 @@ const Profile: React.FC = () => {
     setResetting(true);
     const defaultData = {
       name: JSON.parse(localStorage.getItem('user') || '{}').name || 'User',
+      avatar: '',
       mobile: '',
       age: 30,
       gender: 'MALE',
@@ -132,6 +172,11 @@ const Profile: React.FC = () => {
       const res = await api.put('/api/profile', defaultData);
       setProfile(res.data);
       setFormData(defaultData);
+
+      const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+      localUser.avatar = '';
+      localStorage.setItem('user', JSON.stringify(localUser));
+      window.dispatchEvent(new Event('storage'));
 
       // Trigger Pop Up message with OK button
       showPopUp(
@@ -187,8 +232,31 @@ const Profile: React.FC = () => {
         {/* Metric breakdown cards */}
         <div className="lg:col-span-1 space-y-6">
           <div className="glass p-6 rounded-3xl border border-slate-200/60 text-center shadow-md">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#FF9E8A] to-[#B56A45] flex items-center justify-center font-black text-white text-3xl uppercase mx-auto mb-4 shadow-sm">
-              {formData.name ? formData.name[0] : 'U'}
+            {/* Profile Avatar with Camera Button */}
+            <div className="relative group w-24 h-24 mx-auto mb-4">
+              {formData.avatar ? (
+                <img
+                  src={formData.avatar}
+                  alt={formData.name}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#FF9E8A] to-[#B56A45] flex items-center justify-center font-black text-white text-3xl uppercase shadow-sm">
+                  {formData.name ? formData.name[0] : 'U'}
+                </div>
+              )}
+              <label
+                className="absolute bottom-0 right-0 p-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-lg cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95"
+                title="Upload Profile Picture"
+              >
+                <Camera size={15} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
             </div>
             <h3 className="font-extrabold text-lg text-slate-800">{formData.name || 'User'}</h3>
             <p className="text-xs text-slate-500 font-bold mt-0.5">{profile?.user?.email}</p>
