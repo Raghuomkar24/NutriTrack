@@ -214,14 +214,14 @@ const Profile: React.FC = () => {
 
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-800">User Profile</h2>
-          <p className="text-slate-500 text-sm font-semibold">Configure body metrics and track daily health calculations.</p>
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">User Profile</h2>
+          <p className="text-slate-700 text-sm font-bold">Configure body metrics and track daily health calculations.</p>
         </div>
 
         <button
           onClick={handleResetProfile}
           disabled={resetting}
-          className="flex items-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 font-extrabold text-xs rounded-xl shadow-xs transition duration-200 active:scale-95 cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-extrabold text-xs rounded-xl shadow-xs transition duration-200 active:scale-95 cursor-pointer"
         >
           <RotateCcw size={14} />
           <span>{resetting ? 'Resetting...' : 'Reset Profile'}</span>
@@ -258,44 +258,44 @@ const Profile: React.FC = () => {
                 />
               </label>
             </div>
-            <h3 className="font-extrabold text-lg text-slate-800">{formData.name || 'User'}</h3>
-            <p className="text-xs text-slate-500 font-bold mt-0.5">{profile?.user?.email}</p>
+            <h3 className="font-extrabold text-xl text-slate-900">{formData.name || 'User'}</h3>
+            <p className="text-xs text-slate-700 font-extrabold mt-0.5">{profile?.user?.email}</p>
 
-            <div className="mt-6 pt-6 border-t border-slate-200 space-y-4 text-left">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-bold">BMI</span>
-                <span className="font-extrabold text-slate-800">{profile?.bmi || 'N/A'}</span>
+            <div className="mt-6 pt-6 border-t border-slate-300 space-y-4 text-left">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-900 font-extrabold">BMI</span>
+                <span className="font-black text-slate-950 text-base">{profile?.bmi || 'N/A'}</span>
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-bold">BMR (Mifflin)</span>
-                <span className="font-extrabold text-slate-800">{profile?.bmr || 'N/A'} kcal</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-900 font-extrabold">BMR (Mifflin)</span>
+                <span className="font-black text-slate-950 text-base">{profile?.bmr || 'N/A'} kcal</span>
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-bold">TDEE (Daily Burn)</span>
-                <span className="font-extrabold text-slate-800">{profile?.tdee || 'N/A'} kcal</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-900 font-extrabold">TDEE (Daily Burn)</span>
+                <span className="font-black text-slate-950 text-base">{profile?.tdee || 'N/A'} kcal</span>
               </div>
             </div>
           </div>
 
           {/* Daily Goals Summary */}
           <div className="glass p-6 rounded-3xl border border-slate-200/60 space-y-4 shadow-md">
-            <h4 className="font-extrabold text-sm text-slate-800">Daily Target Targets</h4>
+            <h4 className="font-extrabold text-sm text-slate-900">Daily Target Targets</h4>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-emerald-50/60 p-3 rounded-2xl border border-emerald-100">
-                <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider">Calories</p>
-                <p className="text-base font-extrabold text-emerald-800 mt-1">{profile?.dailyCalories || 'N/A'} kcal</p>
+              <div className="bg-emerald-50/80 p-3 rounded-2xl border border-emerald-200">
+                <p className="text-[10px] text-emerald-950 font-black uppercase tracking-wider">Calories</p>
+                <p className="text-base font-black text-emerald-950 mt-1">{profile?.dailyCalories || 'N/A'} kcal</p>
               </div>
-              <div className="bg-teal-50/60 p-3 rounded-2xl border border-teal-100">
-                <p className="text-[10px] text-teal-700 font-bold uppercase tracking-wider">Protein</p>
-                <p className="text-base font-extrabold text-teal-800 mt-1">{profile?.dailyProtein || 'N/A'} g</p>
+              <div className="bg-teal-50/80 p-3 rounded-2xl border border-teal-200">
+                <p className="text-[10px] text-teal-950 font-black uppercase tracking-wider">Protein</p>
+                <p className="text-base font-black text-teal-950 mt-1">{profile?.dailyProtein || 'N/A'} g</p>
               </div>
-              <div className="bg-blue-50/60 p-3 rounded-2xl border border-blue-100">
-                <p className="text-[10px] text-blue-700 font-bold uppercase tracking-wider">Carbohydrates</p>
-                <p className="text-base font-extrabold text-blue-800 mt-1">{profile?.dailyCarbs || 'N/A'} g</p>
+              <div className="bg-blue-50/80 p-3 rounded-2xl border border-blue-200">
+                <p className="text-[10px] text-blue-950 font-black uppercase tracking-wider">Carbohydrates</p>
+                <p className="text-base font-black text-blue-950 mt-1">{profile?.dailyCarbs || 'N/A'} g</p>
               </div>
-              <div className="bg-amber-50/60 p-3 rounded-2xl border border-amber-100">
-                <p className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">Fats</p>
-                <p className="text-base font-extrabold text-amber-800 mt-1">{profile?.dailyFat || 'N/A'} g</p>
+              <div className="bg-amber-50/80 p-3 rounded-2xl border border-amber-200">
+                <p className="text-[10px] text-amber-950 font-black uppercase tracking-wider">Fats</p>
+                <p className="text-base font-black text-amber-950 mt-1">{profile?.dailyFat || 'N/A'} g</p>
               </div>
             </div>
           </div>
@@ -303,68 +303,68 @@ const Profile: React.FC = () => {
 
         {/* Edit Form */}
         <div className="lg:col-span-2 glass p-8 rounded-3xl border border-slate-200/60 shadow-md">
-          <h3 className="font-extrabold text-base mb-6 text-slate-800">Modify Body Profile</h3>
+          <h3 className="font-extrabold text-base mb-6 text-slate-900">Modify Body Profile</h3>
 
           <form onSubmit={handleSave} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Display Name</label>
+                <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Display Name</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 rounded-xl bg-white/90 border border-slate-300 text-slate-950 font-extrabold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-xs"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Mobile Phone</label>
+                <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Mobile Phone</label>
                 <input
                   type="text"
                   name="mobile"
                   value={formData.mobile}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 rounded-xl bg-white/90 border border-slate-300 text-slate-950 font-extrabold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-xs"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Age (Years)</label>
+                <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Age (Years)</label>
                 <input
                   type="number"
                   name="age"
                   value={formData.age}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 rounded-xl bg-white/90 border border-slate-300 text-slate-950 font-extrabold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-xs"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Gender</label>
+                <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Gender</label>
                 <select
                   name="gender"
                   value={formData.gender}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 rounded-xl bg-white/90 border border-slate-300 text-slate-950 font-extrabold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-xs cursor-pointer"
                 >
-                  <option value="MALE">Male</option>
-                  <option value="FEMALE">Female</option>
+                  <option value="MALE" className="bg-white text-slate-950 font-bold py-1">Male</option>
+                  <option value="FEMALE" className="bg-white text-slate-950 font-bold py-1">Female</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Height (cm)</label>
+                <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Height (cm)</label>
                 <input
                   type="number"
                   name="height"
                   value={formData.height}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 rounded-xl bg-white/90 border border-slate-300 text-slate-950 font-extrabold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-xs"
                   required
                 />
               </div>
@@ -372,70 +372,70 @@ const Profile: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Current Weight (kg)</label>
+                <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Current Weight (kg)</label>
                 <input
                   type="number"
                   name="weight"
                   value={formData.weight}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 rounded-xl bg-white/90 border border-slate-300 text-slate-950 font-extrabold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-xs"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Target Weight (kg)</label>
+                <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Target Weight (kg)</label>
                 <input
                   type="number"
                   name="targetWeight"
                   value={formData.targetWeight}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 rounded-xl bg-white/90 border border-slate-300 text-slate-950 font-extrabold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-xs"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Physical Activity Level</label>
+              <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Physical Activity Level</label>
               <select
                 name="activityLevel"
                 value={formData.activityLevel}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 rounded-xl bg-white/90 border border-slate-300 text-slate-950 font-extrabold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-xs cursor-pointer"
               >
-                <option value="SEDENTARY">Sedentary (Little/no exercise)</option>
-                <option value="LIGHTLY_ACTIVE">Lightly Active (1-3 days/wk)</option>
-                <option value="MODERATELY_ACTIVE">Moderately Active (3-5 days/wk)</option>
-                <option value="VERY_ACTIVE">Very Active (6-7 days/wk)</option>
-                <option value="EXTRA_ACTIVE">Extra Active (Gym twice/day)</option>
+                <option value="SEDENTARY" className="bg-white text-slate-950 font-bold py-1">Sedentary (Little/no exercise)</option>
+                <option value="LIGHTLY_ACTIVE" className="bg-white text-slate-950 font-bold py-1">Lightly Active (1-3 days/wk)</option>
+                <option value="MODERATELY_ACTIVE" className="bg-white text-slate-950 font-bold py-1">Moderately Active (3-5 days/wk)</option>
+                <option value="VERY_ACTIVE" className="bg-white text-slate-950 font-bold py-1">Very Active (6-7 days/wk)</option>
+                <option value="EXTRA_ACTIVE" className="bg-white text-slate-950 font-bold py-1">Extra Active (Gym twice/day)</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Primary Goal</label>
+              <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Primary Goal</label>
               <select
                 name="goal"
                 value={formData.goal}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 rounded-xl bg-white/90 border border-slate-300 text-slate-950 font-extrabold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-xs cursor-pointer"
               >
-                <option value="LOSE_WEIGHT">Lose Weight (-500 kcal deficit)</option>
-                <option value="MAINTAIN">Maintain Weight</option>
-                <option value="GAIN_MUSCLE">Gain Muscle (+350 kcal surplus)</option>
+                <option value="LOSE_WEIGHT" className="bg-white text-slate-950 font-bold py-1">Lose Weight (-500 kcal deficit)</option>
+                <option value="MAINTAIN" className="bg-white text-slate-950 font-bold py-1">Maintain Weight</option>
+                <option value="GAIN_MUSCLE" className="bg-white text-slate-950 font-bold py-1">Gain Muscle (+350 kcal surplus)</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Dietary Preference</label>
+              <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Dietary Preference</label>
               <select
                 name="diet"
                 value={formData.diet}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 rounded-xl bg-white/90 border border-slate-300 text-slate-950 font-extrabold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-xs cursor-pointer"
               >
-                <option value="NON_VEGETARIAN">Non-Vegetarian</option>
-                <option value="VEGETARIAN">Vegetarian</option>
+                <option value="NON_VEGETARIAN" className="bg-white text-slate-950 font-bold py-1">Non-Vegetarian</option>
+                <option value="VEGETARIAN" className="bg-white text-slate-950 font-bold py-1">Vegetarian</option>
               </select>
             </div>
 

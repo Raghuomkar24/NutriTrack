@@ -87,20 +87,20 @@ const WeightTracker: React.FC = () => {
       {/* Stats Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="glass p-5 rounded-3xl bg-white/35">
-          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Current Weight</p>
-          <p className="text-2xl font-extrabold text-slate-800 mt-1">{currentWeight} kg</p>
+          <p className="text-[10px] text-slate-700 font-extrabold uppercase tracking-wider">Current Weight</p>
+          <p className="text-2xl font-black text-slate-900 mt-1">{currentWeight} kg</p>
         </div>
         <div className="glass p-5 rounded-3xl bg-white/35">
-          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Target Weight</p>
-          <p className="text-2xl font-extrabold text-emerald-600 mt-1">{targetWeight} kg</p>
+          <p className="text-[10px] text-slate-700 font-extrabold uppercase tracking-wider">Target Weight</p>
+          <p className="text-2xl font-black text-emerald-700 mt-1">{targetWeight} kg</p>
         </div>
         <div className="glass p-5 rounded-3xl bg-white/35">
-          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Body Mass Index (BMI)</p>
-          <p className="text-2xl font-extrabold text-blue-600 mt-1">{bmi}</p>
+          <p className="text-[10px] text-slate-700 font-extrabold uppercase tracking-wider">Body Mass Index (BMI)</p>
+          <p className="text-2xl font-black text-blue-800 mt-1">{bmi}</p>
         </div>
         <div className="glass p-5 rounded-3xl bg-white/35">
-          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Distance to Goal</p>
-          <p className="text-2xl font-extrabold text-primary-600 mt-1">{weightDiff.toFixed(1)} kg</p>
+          <p className="text-[10px] text-slate-700 font-extrabold uppercase tracking-wider">Distance to Goal</p>
+          <p className="text-2xl font-black text-primary-700 mt-1">{weightDiff.toFixed(1)} kg</p>
         </div>
       </div>
 
