@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Droplet, Award, Plus, Trash2, Sparkles, ChevronRight, Utensils, Crown, HelpCircle,
-  Calendar, TrendingUp, BarChart2, PieChart as PieChartIcon
+  Calendar, TrendingUp, BarChart2, PieChart as PieChartIcon, AlertCircle
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -410,13 +410,20 @@ const Home: React.FC = () => {
 
       {/* AI Smart Reminder */}
       {aiReminder && (
-        <div className="bg-emerald-50/50 border border-emerald-200/50 rounded-2xl p-4 flex items-center gap-4 animate-fade-up shadow-sm" style={{ animationDelay: '100ms' }}>
-          <div className="p-2.5 bg-emerald-100/50 rounded-xl text-emerald-600">
-            <Sparkles size={24} />
+        <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-fade-up shadow-xs" style={{ animationDelay: '100ms' }}>
+          <div className="flex items-start gap-3.5">
+            <div className="p-2.5 bg-emerald-100/70 rounded-xl text-emerald-700 flex-shrink-0 mt-0.5">
+              <Sparkles size={22} />
+            </div>
+            <div>
+              <h4 className="text-xs font-black tracking-wider text-emerald-800 uppercase mb-0.5">Ria's Smart Reminder</h4>
+              <p className="text-sm font-semibold text-emerald-950">{aiReminder}</p>
+            </div>
           </div>
-          <div>
-            <h4 className="text-xs font-black tracking-wider text-emerald-700 uppercase mb-1">Ria's Smart Reminder</h4>
-            <p className="text-sm font-semibold text-emerald-900">{aiReminder}</p>
+
+          <div className="flex items-center gap-1.5 text-[11px] text-emerald-900 font-bold bg-white/60 border border-emerald-200 px-3 py-1.5 rounded-xl shadow-2xs flex-shrink-0 self-start md:self-auto">
+            <AlertCircle size={14} className="text-emerald-700 flex-shrink-0" />
+            <span>Ria provides general wellness tips and is not substitute for professional medical advice, diagnosis or treatment.</span>
           </div>
         </div>
       )}

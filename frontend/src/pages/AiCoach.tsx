@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Send, Bot, User, ArrowRight } from 'lucide-react';
+import { Sparkles, Send, Bot, User, ArrowRight, AlertCircle } from 'lucide-react';
 import api from '../api';
 
 interface Message {
@@ -65,12 +65,18 @@ const AiCoach: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col h-[calc(100dvh-8rem)] pb-4 relative">
-      <div className="mb-4">
+      <div className="mb-3">
         <h2 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
           <span>Ria - AI Coach</span>
           <Sparkles className="text-primary-500 animate-pulse" size={24} />
         </h2>
-        <p className="text-slate-500 text-sm font-semibold">Personalized meal recommendations and nutritional advice guided by your goals.</p>
+        <p className="text-slate-600 text-sm font-semibold mt-0.5">Personalized meal recommendations and nutritional advice guided by your goals.</p>
+        
+        {/* Medical Disclaimer Banner */}
+        <div className="mt-2.5 p-3 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex items-center gap-2.5 text-xs text-amber-950 font-bold shadow-2xs">
+          <AlertCircle size={17} className="text-amber-700 flex-shrink-0" />
+          <span>Ria provides general wellness tips and is not substitute for professional medical advice, diagnosis or treatment.</span>
+        </div>
       </div>
 
       {/* Chat Display Window */}
@@ -152,6 +158,10 @@ const AiCoach: React.FC = () => {
           </button>
         </form>
       </div>
+
+      <p className="text-[11px] text-slate-600 font-bold text-center mt-2.5">
+        <span className="font-extrabold text-amber-800">Disclaimer:</span> Ria provides general wellness tips and is not substitute for professional medical advice, diagnosis or treatment.
+      </p>
     </div>
   );
 };

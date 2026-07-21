@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Activity, Apple, ChevronRight, Leaf, Droplet, User, Check, Plus, MessageSquare } from 'lucide-react';
+import { Sparkles, Activity, Apple, ChevronRight, Leaf, Droplet, User, Check, Plus, MessageSquare, AlertCircle } from 'lucide-react';
 
 interface PreviewParticle {
   id: number;
@@ -271,6 +271,10 @@ const LandingPage: React.FC = () => {
             <p className="text-slate-600 text-sm leading-relaxed font-semibold">
               Receive personalized fitness goals, healthy recipes, and answers regarding food calories dynamically.
             </p>
+            <p className="text-[10px] text-amber-800 font-bold mt-3 pt-2 border-t border-slate-200/60 flex items-start gap-1.5">
+              <AlertCircle size={12} className="text-amber-600 flex-shrink-0 mt-0.5" />
+              <span>Ria provides general wellness tips and is not substitute for professional medical advice, diagnosis or treatment.</span>
+            </p>
           </div>
 
           <div className="glass p-8 rounded-3xl border border-white/50 hover:border-primary-500/30 transition-all duration-300">
@@ -286,8 +290,11 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="glass border-t border-white/40 text-center py-6 text-xs text-slate-600 mt-12 z-10">
+      <footer className="glass border-t border-white/40 text-center py-6 px-4 text-xs text-slate-600 mt-12 z-10 space-y-1">
         <p>&copy; {new Date().getFullYear()} NutriTrack Pro. All rights reserved. Enterprise health assistant.</p>
+        <p className="text-[11px] text-slate-600 font-bold max-w-3xl mx-auto pt-1">
+          <span className="font-extrabold text-amber-800">Medical Disclaimer:</span> Ria provides general wellness tips and is not substitute for professional medical advice, diagnosis or treatment.
+        </p>
       </footer>
     </div>
   );
