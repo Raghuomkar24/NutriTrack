@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { validateEmail } = require('../utils/emailValidator');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret_key', { expiresIn: '30d' });
@@ -43,6 +44,11 @@ exports.registerUser = async (req, res) => {
     let { email, password, name, mobile, age, gender, height, weight, targetWeight, activityLevel, goal, diet } = req.body;
     if (email) email = email.trim().toLowerCase();
     
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      return res.status(400).json({ message: emailValidation.message });
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ message: 'User already exists' });
     
@@ -110,8 +116,9 @@ exports.forgotPassword = async (req, res) => {
     let { email, newPassword } = req.body;
     if (email) email = email.trim().toLowerCase();
 
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required.' });
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      return res.status(400).json({ message: emailValidation.message });
     }
 
     const user = await User.findOne({ email });

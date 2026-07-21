@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import Toast from '../components/Toast';
 import { Leaf } from 'lucide-react';
+import { validateEmail } from '../utils/emailValidator';
 
 const Register: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -50,6 +51,13 @@ const Register: React.FC = () => {
       setError('Please fill in all core fields.');
       return;
     }
+
+    const emailCheck = validateEmail(formData.email);
+    if (!emailCheck.valid) {
+      setError(emailCheck.message || 'Invalid email address.');
+      return;
+    }
+
     setError('');
     setStep(2);
   };

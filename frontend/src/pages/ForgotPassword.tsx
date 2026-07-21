@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Leaf, Eye, EyeOff } from 'lucide-react';
+import { validateEmail } from '../utils/emailValidator';
 
 const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
@@ -22,6 +23,13 @@ const ForgotPassword: React.FC = () => {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.valid) {
+      setError(emailCheck.message || 'Invalid email address.');
+      return;
+    }
+
     setLoading(true);
     try {
       await api.post('/api/auth/forgot-password', { email });

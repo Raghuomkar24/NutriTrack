@@ -1,10 +1,17 @@
 const mongoose = require('mongoose');
+const { validateEmail } = require('../utils/emailValidator');
 
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
     unique: true,
+    validate: {
+      validator: function(v) {
+        return validateEmail(v).valid;
+      },
+      message: props => `${props.value} is a dummy or disposable email address.`
+    }
   },
   password: {
     type: String,
