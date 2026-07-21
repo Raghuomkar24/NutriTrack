@@ -1,12 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
-import { useAlert } from '../context/AlertContext';
+import PopUpModal, { PopUpType } from '../components/PopUpModal';
+import { RotateCcw } from 'lucide-react';
 
 const Profile: React.FC = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { showAlert } = useAlert();
+  const [resetting, setResetting] = useState(false);
+
+  // Pop Up Modal State with OK button for Profile CRUD operations
+  const [popUp, setPopUp] = useState<{
+    open: boolean;
+    title: string;
+    body: string;
+    type: PopUpType;
+  }>({
+    open: false,
+    title: '',
+    body: '',
+    type: 'success',
+  });
+
+  const showPopUp = (title: string, body: string, type: PopUpType = 'success') => {
+    setPopUp({
+      open: true,
+      title,
+      body,
+      type,
+    });
+  };
+
+  const closePopUp = () => {
+    setPopUp(prev => ({ ...prev, open: false }));
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -39,11 +66,7 @@ const Profile: React.FC = () => {
       });
     } catch (err) {
       console.error(err);
-      showAlert({
-        type: 'delete',
-        title: 'Error',
-        body: 'Could not retrieve profile.',
-      });
+      showPopUp('Profile Fetch Error', 'Could not retrieve profile metrics from database.', 'error');
     } finally {
       setLoading(false);
     }
@@ -61,6 +84,7 @@ const Profile: React.FC = () => {
     }));
   };
 
+  // CREATE / UPDATE Profile CRUD operation
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -68,24 +92,58 @@ const Profile: React.FC = () => {
     try {
       const res = await api.put('/api/profile', formData);
       setProfile(res.data);
-      showAlert({
-        type: 'success',
-        title: 'Profile Updated',
-        body: 'Your changes have been saved beautifully.',
-      });
+      
       // Update local storage user name
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       user.name = res.data.name;
       localStorage.setItem('user', JSON.stringify(user));
+
+      // Trigger Pop Up message with OK button
+      showPopUp(
+        'Profile Updated Successfully!',
+        `Your profile details have been saved. Your recalculated BMI is ${res.data.bmi || 'N/A'}, BMR is ${res.data.bmr || 'N/A'} kcal, and Daily Target is ${res.data.dailyCalories || 'N/A'} kcal.`,
+        'success'
+      );
     } catch (err) {
       console.error(err);
-      showAlert({
-        type: 'delete',
-        title: 'Save Failed',
-        body: 'Could not update profile. Please try again.',
-      });
+      showPopUp('Profile Update Failed', 'An error occurred while saving profile changes. Please try again.', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // DELETE / RESET Profile CRUD operation
+  const handleResetProfile = async () => {
+    setResetting(true);
+    const defaultData = {
+      name: JSON.parse(localStorage.getItem('user') || '{}').name || 'User',
+      mobile: '',
+      age: 30,
+      gender: 'MALE',
+      height: 170.0,
+      weight: 70.0,
+      targetWeight: 65.0,
+      activityLevel: 'SEDENTARY',
+      goal: 'MAINTAIN',
+      diet: 'NON_VEGETARIAN'
+    };
+
+    try {
+      const res = await api.put('/api/profile', defaultData);
+      setProfile(res.data);
+      setFormData(defaultData);
+
+      // Trigger Pop Up message with OK button
+      showPopUp(
+        'Profile Reset Successfully!',
+        'Your profile body parameters and nutritional targets have been reset to default values.',
+        'delete'
+      );
+    } catch (err) {
+      console.error(err);
+      showPopUp('Reset Failed', 'Could not reset profile metrics. Please try again.', 'error');
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -100,113 +158,131 @@ const Profile: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
-      <div>
-        <h2 className="text-3xl font-extrabold tracking-tight">User Profile</h2>
-        <p className="text-slate-400 text-sm">Configure body metrics and track daily health calculations.</p>
+      {/* Pop Up Modal with OK Button */}
+      <PopUpModal
+        open={popUp.open}
+        title={popUp.title}
+        body={popUp.body}
+        type={popUp.type}
+        onOk={closePopUp}
+      />
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-800">User Profile</h2>
+          <p className="text-slate-500 text-sm font-semibold">Configure body metrics and track daily health calculations.</p>
+        </div>
+
+        <button
+          onClick={handleResetProfile}
+          disabled={resetting}
+          className="flex items-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 font-extrabold text-xs rounded-xl shadow-xs transition duration-200 active:scale-95 cursor-pointer"
+        >
+          <RotateCcw size={14} />
+          <span>{resetting ? 'Resetting...' : 'Reset Profile'}</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Metric breakdown cards */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="glass p-6 rounded-3xl border border-slate-800 text-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-green-500 to-emerald-500 flex items-center justify-center font-bold text-white text-3xl uppercase mx-auto mb-4">
+          <div className="glass p-6 rounded-3xl border border-slate-200/60 text-center shadow-md">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#FF9E8A] to-[#B56A45] flex items-center justify-center font-black text-white text-3xl uppercase mx-auto mb-4 shadow-sm">
               {formData.name ? formData.name[0] : 'U'}
             </div>
-            <h3 className="font-extrabold text-lg text-slate-200">{formData.name || 'User'}</h3>
-            <p className="text-xs text-slate-500 mt-0.5">{profile?.user?.email}</p>
+            <h3 className="font-extrabold text-lg text-slate-800">{formData.name || 'User'}</h3>
+            <p className="text-xs text-slate-500 font-bold mt-0.5">{profile?.user?.email}</p>
 
-            <div className="mt-6 pt-6 border-t border-slate-800 space-y-4 text-left">
+            <div className="mt-6 pt-6 border-t border-slate-200 space-y-4 text-left">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-medium">BMI</span>
-                <span className="font-bold text-slate-300">{profile?.bmi || 'N/A'}</span>
+                <span className="text-slate-500 font-bold">BMI</span>
+                <span className="font-extrabold text-slate-800">{profile?.bmi || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-medium">BMR (Mifflin)</span>
-                <span className="font-bold text-slate-300">{profile?.bmr || 'N/A'} kcal</span>
+                <span className="text-slate-500 font-bold">BMR (Mifflin)</span>
+                <span className="font-extrabold text-slate-800">{profile?.bmr || 'N/A'} kcal</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-medium">TDEE (Daily Burn)</span>
-                <span className="font-bold text-slate-300">{profile?.tdee || 'N/A'} kcal</span>
+                <span className="text-slate-500 font-bold">TDEE (Daily Burn)</span>
+                <span className="font-extrabold text-slate-800">{profile?.tdee || 'N/A'} kcal</span>
               </div>
             </div>
           </div>
 
           {/* Daily Goals Summary */}
-          <div className="glass p-6 rounded-3xl border border-slate-800 space-y-4">
-            <h4 className="font-extrabold text-sm text-slate-300">Daily Target Targets</h4>
+          <div className="glass p-6 rounded-3xl border border-slate-200/60 space-y-4 shadow-md">
+            <h4 className="font-extrabold text-sm text-slate-800">Daily Target Targets</h4>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-900/40 p-3 rounded-2xl border border-slate-850">
-                <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Calories</p>
-                <p className="text-base font-extrabold text-green-400 mt-1">{profile?.dailyCalories || 'N/A'} kcal</p>
+              <div className="bg-emerald-50/60 p-3 rounded-2xl border border-emerald-100">
+                <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider">Calories</p>
+                <p className="text-base font-extrabold text-emerald-800 mt-1">{profile?.dailyCalories || 'N/A'} kcal</p>
               </div>
-              <div className="bg-slate-900/40 p-3 rounded-2xl border border-slate-850">
-                <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Protein</p>
-                <p className="text-base font-extrabold text-emerald-400 mt-1">{profile?.dailyProtein || 'N/A'} g</p>
+              <div className="bg-teal-50/60 p-3 rounded-2xl border border-teal-100">
+                <p className="text-[10px] text-teal-700 font-bold uppercase tracking-wider">Protein</p>
+                <p className="text-base font-extrabold text-teal-800 mt-1">{profile?.dailyProtein || 'N/A'} g</p>
               </div>
-              <div className="bg-slate-900/40 p-3 rounded-2xl border border-slate-850">
-                <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Carbohydrates</p>
-                <p className="text-base font-extrabold text-blue-400 mt-1">{profile?.dailyCarbs || 'N/A'} g</p>
+              <div className="bg-blue-50/60 p-3 rounded-2xl border border-blue-100">
+                <p className="text-[10px] text-blue-700 font-bold uppercase tracking-wider">Carbohydrates</p>
+                <p className="text-base font-extrabold text-blue-800 mt-1">{profile?.dailyCarbs || 'N/A'} g</p>
               </div>
-              <div className="bg-slate-900/40 p-3 rounded-2xl border border-slate-850">
-                <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Fats</p>
-                <p className="text-base font-extrabold text-amber-400 mt-1">{profile?.dailyFat || 'N/A'} g</p>
+              <div className="bg-amber-50/60 p-3 rounded-2xl border border-amber-100">
+                <p className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">Fats</p>
+                <p className="text-base font-extrabold text-amber-800 mt-1">{profile?.dailyFat || 'N/A'} g</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Edit Form */}
-        <div className="lg:col-span-2 glass p-8 rounded-3xl border border-slate-800">
-          <h3 className="font-extrabold text-base mb-6 text-slate-300">Modify Body Profile</h3>
-
-
+        <div className="lg:col-span-2 glass p-8 rounded-3xl border border-slate-200/60 shadow-md">
+          <h3 className="font-extrabold text-base mb-6 text-slate-800">Modify Body Profile</h3>
 
           <form onSubmit={handleSave} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Display Name</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Display Name</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Mobile Phone</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Mobile Phone</label>
                 <input
                   type="text"
                   name="mobile"
                   value={formData.mobile}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Age (Years)</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Age (Years)</label>
                 <input
                   type="number"
                   name="age"
                   value={formData.age}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Gender</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Gender</label>
                 <select
                   name="gender"
                   value={formData.gender}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="MALE">Male</option>
                   <option value="FEMALE">Female</option>
@@ -214,13 +290,13 @@ const Profile: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Height (cm)</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Height (cm)</label>
                 <input
                   type="number"
                   name="height"
                   value={formData.height}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />
               </div>
@@ -228,37 +304,37 @@ const Profile: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Current Weight (kg)</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Current Weight (kg)</label>
                 <input
                   type="number"
                   name="weight"
                   value={formData.weight}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Target Weight (kg)</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Target Weight (kg)</label>
                 <input
                   type="number"
                   name="targetWeight"
                   value={formData.targetWeight}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                  className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Physical Activity Level</label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Physical Activity Level</label>
               <select
                 name="activityLevel"
                 value={formData.activityLevel}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="SEDENTARY">Sedentary (Little/no exercise)</option>
                 <option value="LIGHTLY_ACTIVE">Lightly Active (1-3 days/wk)</option>
@@ -269,12 +345,12 @@ const Profile: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Primary Goal</label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Primary Goal</label>
               <select
                 name="goal"
                 value={formData.goal}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="LOSE_WEIGHT">Lose Weight (-500 kcal deficit)</option>
                 <option value="MAINTAIN">Maintain Weight</option>
@@ -283,25 +359,27 @@ const Profile: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Dietary Preference</label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Dietary Preference</label>
               <select
                 name="diet"
                 value={formData.diet}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-xl glass-input text-slate-100"
+                className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="NON_VEGETARIAN">Non-Vegetarian</option>
                 <option value="VEGETARIAN">Vegetarian</option>
               </select>
             </div>
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full py-3.5 bg-primary-500 hover:bg-primary-600 font-bold rounded-xl shadow-glass shadow-green-500/20 transition duration-200"
-            >
-              {saving ? 'Calculating Metrics...' : 'Update & Recalculate'}
-            </button>
+            <div className="flex gap-4 pt-2">
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex-1 py-3.5 bg-primary-600 hover:bg-primary-700 text-white font-extrabold rounded-xl shadow-card transition duration-200 active:scale-95 cursor-pointer"
+              >
+                {saving ? 'Calculating Metrics...' : 'Update & Recalculate'}
+              </button>
+            </div>
           </form>
         </div>
       </div>

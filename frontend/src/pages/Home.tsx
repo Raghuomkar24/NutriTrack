@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Droplet, Award, Plus, Trash2, Sparkles, ChevronRight, Download, Utensils, Crown, HelpCircle,
+  Droplet, Award, Plus, Trash2, Sparkles, ChevronRight, Utensils, Crown, HelpCircle,
   Calendar, TrendingUp, BarChart2, PieChart as PieChartIcon
 } from 'lucide-react';
 import { 
@@ -382,31 +382,7 @@ const Home: React.FC = () => {
             )}
           </div>
 
-          {/* Theme Selector Widget */}
-          <div className="flex items-center gap-1.5 bg-white/50 border border-white/70 p-1.5 rounded-2xl shadow-sm">
-            {[
-              { id: 'sunset', color: '#B56A45', label: 'Sunset' },
-              { id: 'ocean', color: '#2C7DA0', label: 'Ocean' },
-              { id: 'forest', color: '#4E8D7C', label: 'Forest' }
-            ].map(theme => (
-              <button
-                key={theme.id}
-                onClick={() => handleThemeChange(theme.id)}
-                className="w-5 h-5 rounded-full border border-white/80 shadow-xs cursor-pointer active:scale-90 transition-all hover:scale-110"
-                style={{ backgroundColor: theme.color }}
-                title={`${theme.label} Theme`}
-              />
-            ))}
-          </div>
-
           <div className="flex gap-2.5">
-            <button
-              onClick={handleDownloadReport}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white/50 hover:bg-white/85 border border-slate-300 text-slate-650 text-xs font-bold rounded-xl shadow-sm transition duration-200 active:scale-95"
-            >
-              <Download size={14} />
-              <span>Report</span>
-            </button>
             <Link
               to="/dashboard/log-meal"
               className="flex items-center gap-2 px-4 py-2.5 bg-[#85C7B7] hover:bg-[#6FAFA1] text-white text-xs font-bold rounded-xl shadow-card transition duration-200 active:scale-95"
