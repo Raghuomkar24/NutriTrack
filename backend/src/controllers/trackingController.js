@@ -6,9 +6,13 @@ const Goal = require('../models/Goal');
 exports.getWater = async (req, res) => {
   try {
     const { date } = req.query;
+    const d = date ? new Date(date) : new Date();
+    const start = new Date(d); start.setHours(0, 0, 0, 0);
+    const end = new Date(d); end.setHours(23, 59, 59, 999);
+
     const log = await WaterLog.findOne({ 
       user: req.user.id, 
-      date: new Date(date) 
+      date: { $gte: start, $lte: end } 
     });
     res.json({ amountMl: log ? log.amount_ml : 0 });
   } catch (error) {
@@ -19,12 +23,16 @@ exports.getWater = async (req, res) => {
 exports.updateWater = async (req, res) => {
   try {
     const { date, amountMl } = req.body;
-    let log = await WaterLog.findOne({ user: req.user.id, date: new Date(date) });
+    const d = date ? new Date(date) : new Date();
+    const start = new Date(d); start.setHours(0, 0, 0, 0);
+    const end = new Date(d); end.setHours(23, 59, 59, 999);
+
+    let log = await WaterLog.findOne({ user: req.user.id, date: { $gte: start, $lte: end } });
     if (log) {
       log.amount_ml = amountMl;
       await log.save();
     } else {
-      log = await WaterLog.create({ user: req.user.id, date: new Date(date), amount_ml: amountMl });
+      log = await WaterLog.create({ user: req.user.id, date: start, amount_ml: amountMl });
     }
     res.json({ amountMl: log.amount_ml });
   } catch (error) {
@@ -35,11 +43,17 @@ exports.updateWater = async (req, res) => {
 exports.getDashboardSummary = async (req, res) => {
   try {
     const { date } = req.query;
-    const targetDate = new Date(date);
+    const d = date ? new Date(date) : new Date();
+    const start = new Date(d); start.setHours(0, 0, 0, 0);
+    const end = new Date(d); end.setHours(23, 59, 59, 999);
+
     const user = await User.findById(req.user.id);
     
-    // Get meals
-    const meals = await Meal.find({ user: req.user.id, date: targetDate }).populate('items.food');
+    // Get meals within date range
+    const meals = await Meal.find({ 
+      user: req.user.id, 
+      date: { $gte: start, $lte: end } 
+    }).populate('items.food');
     
     let caloriesConsumed = 0;
     let proteinConsumed = 0;
@@ -47,40 +61,46 @@ exports.getDashboardSummary = async (req, res) => {
     let fatConsumed = 0;
     
     const formattedMeals = meals.map(meal => {
-      caloriesConsumed += meal.totalCalories;
-      proteinConsumed += meal.totalProtein;
-      carbsConsumed += meal.totalCarbs;
-      fatConsumed += meal.totalFat;
+      caloriesConsumed += (meal.totalCalories || 0);
+      proteinConsumed += (meal.totalProtein || 0);
+      carbsConsumed += (meal.totalCarbs || 0);
+      fatConsumed += (meal.totalFat || 0);
       
       return {
         id: meal._id,
         mealType: meal.mealType,
         mealItems: meal.items,
-        totalCalories: Math.round(meal.totalCalories),
-        totalProtein: Math.round(meal.totalProtein),
-        totalCarbs: Math.round(meal.totalCarbs),
-        totalFat: Math.round(meal.totalFat),
+        totalCalories: Math.round(meal.totalCalories || 0),
+        totalProtein: Math.round(meal.totalProtein || 0),
+        totalCarbs: Math.round(meal.totalCarbs || 0),
+        totalFat: Math.round(meal.totalFat || 0),
       };
     });
 
-    const waterLog = await WaterLog.findOne({ user: req.user.id, date: targetDate });
+    const waterLog = await WaterLog.findOne({ user: req.user.id, date: { $gte: start, $lte: end } });
     const waterConsumedMl = waterLog ? waterLog.amount_ml : 0;
-    const waterGoal = user.profile.gender === 'MALE' ? 3000 : 2200;
+    const waterGoal = (user?.profile?.gender === 'MALE' ? 3000 : 2200);
 
     // Get exercises for the date to calculate calories burned
-    const exercises = await ExerciseLog.find({ user: req.user.id, date: targetDate });
-    const totalCaloriesBurned = exercises.reduce((acc, curr) => acc + curr.caloriesBurned, 0);
+    const exercises = await ExerciseLog.find({ user: req.user.id, date: { $gte: start, $lte: end } });
+    const totalCaloriesBurned = exercises.reduce((acc, curr) => acc + (curr.caloriesBurned || 0), 0);
+
+    // Ensure fallback goals if user profile fields are missing or 0
+    const dailyCaloriesGoal = user?.profile?.dailyCalories || user?.profile?.tdee || 2000;
+    const dailyProteinGoal = user?.profile?.dailyProtein || 150;
+    const dailyCarbsGoal = user?.profile?.dailyCarbs || 225;
+    const dailyFatGoal = user?.profile?.dailyFat || 65;
 
     res.json({
-      dailyCaloriesGoal: user.profile.dailyCalories,
+      dailyCaloriesGoal: Math.round(dailyCaloriesGoal),
       caloriesConsumed: Math.round(caloriesConsumed),
       caloriesBurned: Math.round(totalCaloriesBurned),
       proteinConsumed: Math.round(proteinConsumed),
-      dailyProteinGoal: Math.round(user.profile.dailyProtein),
+      dailyProteinGoal: Math.round(dailyProteinGoal),
       carbsConsumed: Math.round(carbsConsumed),
-      dailyCarbsGoal: Math.round(user.profile.dailyCarbs),
+      dailyCarbsGoal: Math.round(dailyCarbsGoal),
       fatConsumed: Math.round(fatConsumed),
-      dailyFatGoal: Math.round(user.profile.dailyFat),
+      dailyFatGoal: Math.round(dailyFatGoal),
       todayMeals: formattedMeals,
       waterConsumedMl,
       waterGoal
