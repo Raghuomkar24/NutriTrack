@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../api';
-import Toast from '../components/Toast';
+import api from '@/api';
+import Toast from '@/components/Toast';
 import { Leaf } from 'lucide-react';
 import { validateEmail } from '../utils/emailValidator';
 
@@ -86,9 +86,9 @@ const Register: React.FC = () => {
       setTimeout(() => {
         navigate('/dashboard/home');
       }, 1500);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Try again.');
-      setToast({ message: err.response?.data?.message || 'Registration failed. Try again.', type: 'error' });
+    } catch (err: unknown) {
+      setError((err as any).response?.data?.message || 'Registration failed. Try again.');
+      setToast({ message: (err as any).response?.data?.message || 'Registration failed. Try again.', type: 'error' });
       setStep(1); // Return to first step to check inputs
     } finally {
       setLoading(false);

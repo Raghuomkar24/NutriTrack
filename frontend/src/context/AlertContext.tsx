@@ -5,8 +5,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import AlertToast from '../components/AlertToast';
-import ConfirmDialog from '../components/ConfirmDialog';
+import AlertToast from '@/components/AlertToast';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

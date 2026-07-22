@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { ExerciseLog } from '@/types';
 import { Dumbbell, Trash2, Calendar, Clock, Flame, CheckCircle } from 'lucide-react';
-import api from '../api';
+import api from '@/api';
 
 const ExerciseTracker: React.FC = () => {
-  const [exercises, setExercises] = useState<any[]>([]);
+  const [exercises, setExercises] = useState<ExerciseLog[]>([]);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [exerciseType, setExerciseType] = useState('RUNNING');
   const [durationMinutes, setDurationMinutes] = useState('30');
@@ -76,7 +77,7 @@ const ExerciseTracker: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       await api.delete(`/api/exercise/${id}`);
       fetchExercises();
@@ -208,7 +209,7 @@ const ExerciseTracker: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {exercises.map((item: any) => {
+                {exercises.map((item: ExerciseLog) => {
                   const isNew = item.id === newEntryId;
                   return (
                     <div

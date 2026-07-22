@@ -45,4 +45,21 @@ api.interceptors.response.use(
   }
 );
 
+import { ApiError } from '@/types';
+
+// Structured error handler
+export const handleApiError = (error: unknown): ApiError => {
+  if (axios.isAxiosError(error)) {
+    return {
+      message: error.response?.data?.message || error.message || 'An unexpected error occurred',
+      status: error.response?.status,
+      code: error.code,
+    };
+  }
+  if (error instanceof Error) {
+    return { message: error.message };
+  }
+  return { message: String(error) };
+};
+
 export default api;

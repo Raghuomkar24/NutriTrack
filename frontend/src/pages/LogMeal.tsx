@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Meal, Food, MealItem } from '@/types';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, Plus, Trash2, Camera, Scan, Sparkles, X, ChevronRight, CheckCircle2, Sliders,
@@ -6,11 +7,11 @@ import {
 } from 'lucide-react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../api';
-import { useAlert } from '../context/AlertContext';
+import api from '@/api';
+import { useAlert } from '@/context/AlertContext';
 
 interface LoggedItem {
-  id: number;
+  id: string;
   name: string;
   brand: string;
   calories: number;
@@ -52,7 +53,7 @@ const LogMeal: React.FC = () => {
   // Image recognition state
   const [showPhotoRecognizer, setShowPhotoRecognizer] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [recognizedMeal, setRecognizedMeal] = useState<any>(null);
+  const [recognizedMeal, setRecognizedMeal] = useState<any>(null) /* TODO: Fix RecognizeMeal type */;
 
   const navigate = useNavigate();
   const { showAlert, confirmDelete } = useAlert();
@@ -127,16 +128,16 @@ const LogMeal: React.FC = () => {
     }
   };
 
-  const handleAddItem = (food: any) => {
-    const foodId = food._id || food.id;
+  const handleAddItem = (food: Food) => {
+    const foodId = food._id;
     // Check if food already in staged items
-    const exists = selectedItems.find(item => item.id === foodId);
+    const exists = selectedItems.find(item => String(item.id) === String(foodId));
     if (exists) return;
 
     setSelectedItems(prev => [
       ...prev,
       {
-        id: foodId,
+        id: String(foodId),
         name: food.name,
         brand: food.brand || 'Generic',
         calories: food.calories,
@@ -153,7 +154,7 @@ const LogMeal: React.FC = () => {
   const handleUpdateQuantity = (foodId: number, qty: number, unit?: string, multiplier?: number) => {
     setSelectedItems(prev =>
       prev.map(item => {
-        if (item.id === foodId) {
+        if (String(item.id) === String(foodId)) {
           return { 
             ...item, 
             quantity: Math.max(0.1, qty), 
@@ -411,7 +412,7 @@ const LogMeal: React.FC = () => {
                                 <p className="text-xs text-slate-500 font-bold">{item.brand}</p>
                               </div>
                               <button 
-                                onClick={() => handleRemoveItem(item.id)}
+                                onClick={() => handleRemoveItem(String(item.id))}
                                 className="p-1.5 text-slate-500 hover:text-primary-600 rounded-lg hover:bg-primary-50/50 transition-all duration-200"
                               >
                                 <Trash2 size={15} />
@@ -427,7 +428,7 @@ const LogMeal: React.FC = () => {
                                   max="10"
                                   step="0.5"
                                   value={item.quantity}
-                                  onChange={(e) => handleUpdateQuantity(item.id, parseFloat(e.target.value))}
+                                  onChange={(e) => handleUpdateQuantity(String(item.id), parseFloat(e.target.value))}
                                   className="custom-slider"
                                   style={{
                                     background: `linear-gradient(to right, #FF9E8A 0%, #FF9E8A ${percentage}%, #FFE3D4 ${percentage}%, #FFE3D4 100%)`
@@ -441,14 +442,14 @@ const LogMeal: React.FC = () => {
                                   min="0.1"
                                   max="50"
                                   value={item.quantity}
-                                  onChange={(e) => handleUpdateQuantity(item.id, parseFloat(e.target.value) || 0)}
+                                  onChange={(e) => handleUpdateQuantity(String(item.id), parseFloat(e.target.value) || 0)}
                                   className="w-16 px-2 py-1 glass-input border border-slate-300 text-xs rounded text-center text-slate-850 font-bold focus:outline-none focus:border-primary-500"
                                 />
                                 <select
                                   value={item.unitMultiplier}
                                   onChange={(e) => {
                                     const option = e.target.options[e.target.selectedIndex];
-                                    handleUpdateQuantity(item.id, item.quantity, option.text, parseFloat(e.target.value));
+                                    handleUpdateQuantity(String(item.id), item.quantity, option.text, parseFloat(e.target.value));
                                   }}
                                   className="px-2 py-1 glass-input border border-slate-300 text-xs rounded text-slate-850 font-semibold focus:outline-none focus:border-primary-500 max-w-[120px] truncate"
                                 >
@@ -567,15 +568,15 @@ const LogMeal: React.FC = () => {
 
             <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
               {searchResults.map(food => (
-                <div key={food.id} className="p-3 bg-white/40 border border-white/30 rounded-xl flex items-center justify-between gap-3 hover:bg-white/60 transition duration-200">
+                <div key={food._id} className="p-3 bg-white/40 border border-white/30 rounded-xl flex items-center justify-between gap-3 hover:bg-white/60 transition duration-200">
                   <div className="truncate">
                     <h4 className="font-bold text-xs text-slate-850 truncate">{food.name}</h4>
                     <p className="text-[10px] text-slate-500 font-bold truncate">{food.brand || 'Generic'} - {food.servingSize}</p>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button 
-                      onClick={() => handleToggleFavorite(food.id)}
-                      className={`text-sm ${favorites.some(f => f.id === food.id) ? 'text-primary-600' : 'text-slate-550 hover:text-slate-700'}`}
+                      onClick={() => handleToggleFavorite(food._id)}
+                      className={`text-sm ${favorites.some(f => f.id === food._id) ? 'text-primary-600' : 'text-slate-550 hover:text-slate-700'}`}
                     >
                       ♥
                     </button>
@@ -599,7 +600,7 @@ const LogMeal: React.FC = () => {
             <h3 className="font-extrabold text-sm mb-4 text-slate-800">Favorite Foods</h3>
             <div className="space-y-3">
               {favorites.map(food => (
-                <div key={food.id} className="flex justify-between items-center text-xs">
+                <div key={food._id} className="flex justify-between items-center text-xs">
                   <span className="text-slate-600 font-bold truncate pr-4">{food.name}</span>
                   <button
                     onClick={() => handleAddItem(food)}
@@ -650,7 +651,7 @@ const LogMeal: React.FC = () => {
           </div>
         ) : (() => {
           // Group meals by mealType
-          const grouped: Record<string, any[]> = {};
+          const grouped: Record<string, Meal[]> = {};
           diaryMeals.forEach(meal => {
             if (!grouped[meal.mealType]) grouped[meal.mealType] = [];
             grouped[meal.mealType].push(meal);
@@ -715,16 +716,16 @@ const LogMeal: React.FC = () => {
 
                     {/* Meal entries */}
                     <div className="divide-y divide-white/30">
-                      {meals.map((meal: any) => (
+                      {meals.map((meal: Meal) => (
                         <div key={meal._id} className="px-5 py-3.5 bg-white/20 hover:bg-white/35 transition group">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
                               {/* Food items listed */}
                               <div className="space-y-1">
-                                {meal.items.map((item: any, idx: number) => (
+                                {meal.items.map((item: MealItem, idx: number) => (
                                   <div key={idx} className="flex items-center justify-between text-xs">
                                     <span className="font-semibold text-slate-700 truncate pr-4">
-                                      {item.food?.name || 'Unknown food'}
+                                      {(typeof item.food === 'string' ? item.food : (item.food as any)?.name) || 'Unknown food'}
                                       <span className="text-slate-400 font-normal ml-1">({Math.round(item.quantity_g)}g)</span>
                                     </span>
                                     <span className="text-slate-500 font-bold flex-shrink-0">{Math.round(item.calories)} kcal</span>

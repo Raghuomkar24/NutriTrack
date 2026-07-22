@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Notification } from '@/types';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, User, Utensils, Droplet, Scale, 
-  Dumbbell, MessageSquare, BookOpen, LogOut, Menu, X, Bell, Shield, Map, Leaf
+  Dumbbell, MessageSquare, BookOpen, LogOut, Menu, X, Bell, Shield, Map, Leaf, FileText
 } from 'lucide-react';
-import api from '../api';
+import api from '@/api';
 import Toast from './Toast';
 
 interface DashboardLayoutProps {
@@ -13,7 +14,7 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [toasts, setToasts] = useState<{id: number, msg: string, type: 'info' | 'success'}[]>([]);
   const navigate = useNavigate();
@@ -106,6 +107,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     { name: 'Active Goals', path: '/dashboard/goals', icon: Map },
     { name: 'AI Coach', path: '/dashboard/ai-coach', icon: MessageSquare },
     { name: 'Recipes & Groceries', path: '/dashboard/recipes', icon: BookOpen },
+    { name: 'Reports', path: '/dashboard/reports', icon: FileText },
   ];
 
   if (isAdmin) {

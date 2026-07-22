@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { WeightLog, Meal } from '@/types';
+import { useNavigate } from 'react-router-dom';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, BarChart, Bar, Legend, Line 
 } from 'recharts';
-import { Download, Activity } from 'lucide-react';
-import api from '../api';
+import { Download, Activity, FileText } from 'lucide-react';
+import api from '@/api';
 
 const Analytics: React.FC = () => {
   const [timeframe, setTimeframe] = useState(7);
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState<any[]>([]);
   const [weightHistory, setWeightHistory] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   const fetchAnalyticsData = async () => {
     setLoading(true);
@@ -33,10 +36,10 @@ const Analytics: React.FC = () => {
         const waterRes = await api.get(`/api/water?date=${dateStr}`);
         const exerciseRes = await api.get(`/api/exercise?date=${dateStr}`);
 
-        const totalCalories = mealRes.data.reduce((sum: number, m: any) => sum + m.totalCalories, 0);
-        const totalProtein = mealRes.data.reduce((sum: number, m: any) => sum + m.totalProtein, 0);
-        const totalCarbs = mealRes.data.reduce((sum: number, m: any) => sum + m.totalCarbs, 0);
-        const totalFat = mealRes.data.reduce((sum: number, m: any) => sum + m.totalFat, 0);
+        const totalCalories = mealRes.data.reduce((sum: number, m: Meal) => sum + m.totalCalories, 0);
+        const totalProtein = mealRes.data.reduce((sum: number, m: Meal) => sum + m.totalProtein, 0);
+        const totalCarbs = mealRes.data.reduce((sum: number, m: Meal) => sum + m.totalCarbs, 0);
+        const totalFat = mealRes.data.reduce((sum: number, m: Meal) => sum + m.totalFat, 0);
         const waterMl = waterRes.data?.amountMl || 0;
         const exerciseBurn = exerciseRes.data.reduce((sum: number, e: any) => sum + e.caloriesBurned, 0);
 
@@ -68,8 +71,7 @@ const Analytics: React.FC = () => {
   }, [timeframe]);
 
   const handleDownloadReport = () => {
-    const token = localStorage.getItem('token');
-    window.open(`/api/reports/download?days=${timeframe}&token=${token}`, '_blank');
+    navigate('/dashboard/reports');
   };
 
   if (loading) {

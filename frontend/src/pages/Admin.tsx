@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { User } from '@/types';
 import { ShieldAlert, Users, FolderTree, Database, Trash2, Shield, PlusCircle, Check } from 'lucide-react';
-import api from '../api';
+import api from '@/api';
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'foods'>('stats');
   const [stats, setStats] = useState<any>(null);
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   
   // New Food form state
   const [newFood, setNewFood] = useState({
@@ -41,7 +42,7 @@ const Admin: React.FC = () => {
     fetchAdminData();
   }, []);
 
-  const handleDeleteUser = async (userId: number) => {
+  const handleDeleteUser = async (userId: string) => {
     const confirm = window.confirm("Are you sure you want to delete this user? This action is permanent.");
     if (!confirm) return;
 
@@ -187,13 +188,13 @@ const Admin: React.FC = () => {
                 {users.map(u => (
                   <tr key={u.id} className="hover:bg-slate-900/20">
                     <td className="px-6 py-4 font-mono">{u.id}</td>
-                    <td className="px-6 py-4 font-bold text-slate-100">{u.name}</td>
+                    <td className="px-6 py-4 font-bold text-slate-100">{u.profile.name}</td>
                     <td className="px-6 py-4">{u.email}</td>
-                    <td className="px-6 py-4">{u.goal || '-'}</td>
+                    <td className="px-6 py-4">{u.profile.goal || '-'}</td>
                     <td className="px-6 py-4">
-                      {u.roles.map((r: any) => (
-                        <span key={r.id} className={`px-2 py-0.5 rounded text-[10px] font-bold ${r.name === 'ROLE_ADMIN' ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-green-500/10 border border-green-500/20 text-green-400'}`}>
-                          {r.name.replace('ROLE_', '')}
+                      {u.roles.map((r: string) => (
+                        <span key={r} className={`px-2 py-0.5 rounded text-[10px] font-bold ${r === 'ROLE_ADMIN' ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-green-500/10 border border-green-500/20 text-green-400'}`}>
+                          {r.replace('ROLE_', '')}
                         </span>
                       ))}
                     </td>

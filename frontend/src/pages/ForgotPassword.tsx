@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../api';
+import api from '@/api';
 import { Leaf, Eye, EyeOff } from 'lucide-react';
 import { validateEmail } from '../utils/emailValidator';
 
@@ -34,8 +34,8 @@ const ForgotPassword: React.FC = () => {
     try {
       await api.post('/api/auth/forgot-password', { email });
       setStep('reset');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Something went wrong. Please try again.');
+    } catch (err: unknown) {
+      setError((err as any).response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -59,8 +59,8 @@ const ForgotPassword: React.FC = () => {
     try {
       await api.post('/api/auth/forgot-password', { email, newPassword });
       setStep('done');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Something went wrong. Please try again.');
+    } catch (err: unknown) {
+      setError((err as any).response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

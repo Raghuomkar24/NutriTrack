@@ -21,6 +21,7 @@ import AiCoach from './pages/AiCoach';
 import Recipes from './pages/Recipes';
 import Admin from './pages/Admin';
 import Goals from './pages/Goals';
+import Reports from './pages/Reports';
 
 const App: React.FC = () => {
   React.useEffect(() => {
@@ -55,6 +56,7 @@ const App: React.FC = () => {
                   <Route path="ai-coach" element={<AiCoach />} />
                   <Route path="recipes" element={<Recipes />} />
                   <Route path="goals" element={<Goals />} />
+                  <Route path="reports" element={<Reports />} />
                   
                   {/* Admin Route restricted to ROLE_ADMIN */}
                   <Route 

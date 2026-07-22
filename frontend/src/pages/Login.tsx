@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import api from '../api';
-import Toast from '../components/Toast';
+import api from '@/api';
+import Toast from '@/components/Toast';
 import { Leaf } from 'lucide-react';
 
 const Login: React.FC = () => {
@@ -37,8 +37,8 @@ const Login: React.FC = () => {
       setTimeout(() => {
         navigate('/dashboard/home');
       }, 1000);
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Login failed due to a network or server error.';
+    } catch (err) {
+      const errorMsg = (err as any).response?.data?.message || (err as any).message || 'Login failed due to a network or server error.';
       setError(errorMsg);
       setToast({ message: errorMsg, type: 'error' });
     } finally {

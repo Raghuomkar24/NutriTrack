@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Droplet, Trophy, Crown, Gift, HelpCircle, Sparkles, Check, Menu, Activity, Heart, ShoppingCart, ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import api from '../api';
-import { useAlert } from '../context/AlertContext';
+import api from '@/api';
+import { useAlert } from '@/context/AlertContext';
 
 // Confetti particle component for completion celebration
 const ConfettiParticle: React.FC<{ x: number; y: number; color: string; delay: number }> = ({ x, y, color, delay }) => (

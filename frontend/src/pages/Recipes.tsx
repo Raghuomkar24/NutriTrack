@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Recipe, RecipeIngredient } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, ShoppingCart, X, Check, ChefHat, Search,
   Sparkles, Trash2, ListChecks, Package, Leaf, Egg, Milk, ShoppingBag
 } from 'lucide-react';
-import api from '../api';
-import { useAlert } from '../context/AlertContext';
+import api from '@/api';
+import { useAlert } from '@/context/AlertContext';
 
 // ─── Ingredient category assignment ──────────────────────────────────────────
 const CATEGORIES = ['Proteins', 'Produce', 'Dairy', 'Pantry'] as const;
@@ -44,14 +45,14 @@ interface GroceryItem {
   category: Category;
 }
 
-function compileGroceryList(recipes: any[], selectedIds: string[]): Record<Category, GroceryItem[]> {
+function compileGroceryList(recipes: Recipe[], selectedIds: string[]): Record<Category, GroceryItem[]> {
   const selected = recipes.filter(r => selectedIds.includes(r.id));
   const map: Record<string, { amountG: number; category: Category }> = {};
 
   selected.forEach(recipe => {
-    (recipe.recipeIngredients || []).forEach((item: any) => {
-      const name = item.ingredient?.name || 'Unknown';
-      const qty  = item.quantityG || 0;
+    (recipe.recipeIngredients || []).forEach((item: RecipeIngredient) => {
+      const name = (typeof item.ingredient === 'string' ? item.ingredient : item.ingredient?.name) || 'Unknown';
+      const qty  = item.quantity_g || 0;
       if (map[name]) {
         map[name].amountG += qty;
       } else {
@@ -344,8 +345,8 @@ const Recipes: React.FC = () => {
                 </div>
                 {/* Category chips */}
                 <div className="absolute bottom-2 left-2 flex gap-1">
-                  {(Array.from(new Set((recipe.recipeIngredients || []).map((ing: any) => classifyIngredient(ing.ingredient?.name || '')))) as Category[]).slice(0,2).map((cat) => {
-                    const c = CATEGORY_COLORS[cat];
+                  {[...new Set((recipe.recipeIngredients || []).map((ing: RecipeIngredient) => classifyIngredient((typeof ing.ingredient === 'string' ? ing.ingredient : ing.ingredient?.name) || '')))].slice(0,2).map((cat) => {
+                    const c = CATEGORY_COLORS[cat as Category];
                     return (
                       <span key={cat} className={`text-[9px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${c.chip}`}>{cat}</span>
                     );
@@ -376,9 +377,9 @@ const Recipes: React.FC = () => {
                 {/* Ingredients preview */}
                 {(recipe.recipeIngredients || []).length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1">
-                    {recipe.recipeIngredients.slice(0, 3).map((ing: any, idx: number) => (
+                    {recipe.recipeIngredients.slice(0, 3).map((ing: RecipeIngredient, idx: number) => (
                       <span key={idx} className="text-[9px] bg-white/50 border border-white/60 px-2 py-0.5 rounded-full text-slate-600 font-semibold">
-                        {ing.ingredient?.name}
+                        {(typeof ing.ingredient === 'string' ? ing.ingredient : ing.ingredient?.name)}
                       </span>
                     ))}
                     {recipe.recipeIngredients.length > 3 && (

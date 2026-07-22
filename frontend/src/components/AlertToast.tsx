@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Trash2, X } from 'lucide-react';
-import type { AlertItem } from '../context/AlertContext';
+import type { AlertItem } from '@/context/AlertContext';
 
 interface AlertToastProps {
   toast: AlertItem;

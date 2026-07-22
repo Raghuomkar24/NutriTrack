@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Goal, ExerciseLog } from '@/types';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Map as MapIcon, Target, Activity, Plus, Trash2, Navigation, Footprints, Clock, Download } from 'lucide-react';
-import api from '../api';
-import { useAlert } from '../context/AlertContext';
+import api from '@/api';
+import { useAlert } from '@/context/AlertContext';
 
 // Fix for default marker icon in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -46,8 +47,8 @@ const MapController = ({ destination, currentPos }: { destination: [number, numb
 };
 
 const Goals: React.FC = () => {
-  const [goals, setGoals] = useState<any[]>([]);
-  const [exercises, setExercises] = useState<any[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [exercises, setExercises] = useState<ExerciseLog[]>([]);
   const [activityType, setActivityType] = useState('WALKING');
   const [targetDistance, setTargetDistance] = useState('5');
   const [loading, setLoading] = useState(true);
@@ -175,7 +176,7 @@ const Goals: React.FC = () => {
     }
   };
 
-  const calculateProgress = (goal: any) => {
+  const calculateProgress = (goal: Goal) => {
     const achieved = exercises
       .filter(ex => ex.exerciseType === goal.activityType)
       .reduce((acc, curr) => acc + (curr.distanceKm || 0), 0);
@@ -290,7 +291,7 @@ const Goals: React.FC = () => {
                           </h4>
                         </div>
                         <button 
-                          onClick={() => handleDeleteGoal(goal._id)}
+                          onClick={() => handleDeleteGoal(goal._id as string)}
                           className="text-slate-400 hover:text-red-500 transition"
                         >
                           <Trash2 size={14} />

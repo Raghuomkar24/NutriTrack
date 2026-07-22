@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Send, Bot, User, ArrowRight, AlertCircle } from 'lucide-react';
-import api from '../api';
+import api from '@/api';
 
 interface Message {
   sender: 'user' | 'ai';

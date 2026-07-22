@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { WeightLog, UserProfile } from '@/types';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip 
 } from 'recharts';
 import { Scale, Calendar, TrendingDown } from 'lucide-react';
-import api from '../api';
-import { useAlert } from '../context/AlertContext';
+import api from '@/api';
+import { useAlert } from '@/context/AlertContext';
 
 const WeightTracker: React.FC = () => {
   const [weight, setWeight] = useState('');
-  const [weightHistory, setWeightHistory] = useState<any[]>([]);
-  const [profile, setProfile] = useState<any>(null);
+  const [weightHistory, setWeightHistory] = useState<WeightLog[]>([]);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const { showAlert } = useAlert();

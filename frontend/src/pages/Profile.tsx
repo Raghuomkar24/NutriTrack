@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api';
-import PopUpModal, { PopUpType } from '../components/PopUpModal';
+import { UserProfile } from '@/types';
+import api from '@/api';
+import { useAlert } from '@/context/AlertContext';
+import PopUpModal, { PopUpType } from '@/components/PopUpModal';
 import { RotateCcw, Camera } from 'lucide-react';
 
 const Profile: React.FC = () => {
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -69,6 +71,7 @@ const Profile: React.FC = () => {
     } catch (err) {
       console.error(err);
       showPopUp('Profile Fetch Error', 'Could not retrieve profile metrics from database.', 'error');
+      console.error('Could not retrieve profile.');
     } finally {
       setLoading(false);
     }

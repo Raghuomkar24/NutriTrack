@@ -9,7 +9,7 @@ import {
   Tooltip, PieChart, Pie, Cell,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
 } from 'recharts';
-import api from '../api';
+import api from '@/api';
 
 // Animated Number Hook for dynamic counting
 const AnimatedNumber: React.FC<{ value: number }> = ({ value }) => {
@@ -48,8 +48,10 @@ const ConfettiParticle: React.FC<{ x: number; y: number; color: string; delay: n
 
 const CONFETTI_COLORS = ['#FFE3D4', '#FFF1E6', '#FF9E8A', '#B56A45', '#F4F3EE'];
 
+import { DashboardSummary } from '@/types';
+
 const Home: React.FC = () => {
-  const [summary, setSummary] = useState<any>(null);
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [aiReminder, setAiReminder] = useState<string | null>(null);
@@ -165,7 +167,7 @@ const Home: React.FC = () => {
       return updated;
     });
     // Trigger celebration confetti
-    triggerCalorieConfetti();
+    setCalorieConfetti([]);
   };
 
   const [deleteMealId, setDeleteMealId] = useState<number | null>(null);
@@ -218,7 +220,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     if (!summary) return;
     const goal = summary.waterGoal || 2500;
-    const consumed = summary.waterConsumedMl || 0;
+    const consumed = ((summary?.waterConsumedMl as number) || 0) || 0;
     const pct = Math.min(100, (consumed / goal) * 100);
 
     if (pct >= 100 && prevWaterMl.current < goal) {
@@ -264,7 +266,7 @@ const Home: React.FC = () => {
     setTimeout(() => setWaterSplashParticles([]), 750);
 
     try {
-      const newAmount = summary.waterConsumedMl + amount;
+      const newAmount = ((summary?.waterConsumedMl as number) || 0) + amount;
       const res = await api.post('/api/water', { date, amountMl: newAmount });
       setSummary({ ...summary, waterConsumedMl: res.data.amountMl });
       // Slosh animation
@@ -336,7 +338,7 @@ const Home: React.FC = () => {
     window.open(`/api/reports/download?days=7&token=${token}`, '_blank');
   };
 
-  const dashboardGlasses = Math.min(8, Math.round((summary?.waterConsumedMl || 0) / 250));
+  const dashboardGlasses = Math.min(8, Math.round(((summary?.waterConsumedMl as number) || 0) / 250));
   const dashboardWaterRatio = dashboardGlasses / 8;
   const dStartR = Math.round(162 + (184 - 162) * dashboardWaterRatio);
   const dStartG = Math.round(210 + (225 - 210) * dashboardWaterRatio);
@@ -446,7 +448,7 @@ const Home: React.FC = () => {
             <p className="text-sm text-slate-600 mt-2 leading-relaxed font-semibold">
               {summary?.waterConsumedMl >= (summary?.waterGoal || 2500) 
                 ? "Hydration goal met! 💧 " 
-                : `Drink ${Math.max(0, (summary?.waterGoal || 2500) - (summary?.waterConsumedMl || 0))} ml more to hit your water goal. `}
+                : `Drink ${Math.max(0, (summary?.waterGoal || 2500) - ((summary?.waterConsumedMl as number) || 0))} ml more to hit your water goal. `}
               {caloriesBurned > 0 ? `You've burned ${caloriesBurned} kcal through exercise today! 🏃‍♂️` : "No exercise logged yet."}
             </p>
           </div>
@@ -617,13 +619,13 @@ const Home: React.FC = () => {
                   waterSloshing ? 'animate-water-slosh' : ''
                 }`}
                 style={{
-                  height: `${Math.min(100, ((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100)}%`,
+                  height: `${Math.min(100, (((summary?.waterConsumedMl as number) || 0) / (summary?.waterGoal || 2500)) * 100)}%`,
                   background: `linear-gradient(180deg, ${dashAquaTealStart} 0%, ${dashAquaTealEnd} 100%)`,
                   transition: 'height 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                 }}
               >
                 {/* Layered Animated Wave SVGs */}
-                {((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100 > 0 && ((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100 < 100 && (
+                {(((summary?.waterConsumedMl as number) || 0) / (summary?.waterGoal || 2500)) * 100 > 0 && (((summary?.waterConsumedMl as number) || 0) / (summary?.waterGoal || 2500)) * 100 < 100 && (
                   <>
                     <svg 
                       className="absolute left-0 right-0 w-[200%] h-6 text-[#2C7DA0]/35 fill-current -top-5 animate-water-wave"
@@ -643,7 +645,7 @@ const Home: React.FC = () => {
                 )}
 
                 {/* Floating Bubbles */}
-                {((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100 > 5 && (
+                {(((summary?.waterConsumedMl as number) || 0) / (summary?.waterGoal || 2500)) * 100 > 5 && (
                   <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute bottom-2 left-4 w-1.5 h-1.5 bg-white/20 rounded-full animate-bubble-up-1"></div>
                     <div className="absolute bottom-6 right-6 w-1 h-1 bg-white/30 rounded-full animate-bubble-up-2"></div>
@@ -672,19 +674,19 @@ const Home: React.FC = () => {
                 <Droplet 
                   size={22} 
                   className={`transition-colors duration-500 ${
-                    ((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100 > 45 
+                    (((summary?.waterConsumedMl as number) || 0) / (summary?.waterGoal || 2500)) * 100 > 45 
                       ? 'text-white' 
                       : 'text-[#014F86]'
                   }`} 
                 />
                 <span 
                   className={`text-xs font-black transition-colors duration-500 mt-0.5 ${
-                    ((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100 > 60 
+                    (((summary?.waterConsumedMl as number) || 0) / (summary?.waterGoal || 2500)) * 100 > 60 
                       ? 'text-white' 
                       : 'text-slate-800'
                   }`}
                 >
-                  {Math.round(Math.min(100, ((summary?.waterConsumedMl || 0) / (summary?.waterGoal || 2500)) * 100))}%
+                  {Math.round(Math.min(100, (((summary?.waterConsumedMl as number) || 0) / (summary?.waterGoal || 2500)) * 100))}%
                 </span>
               </div>
 
@@ -710,7 +712,7 @@ const Home: React.FC = () => {
               <p className={`text-4xl font-extrabold transition-all duration-300 ${
                 waterTextScaling ? 'scale-110 text-primary-655' : 'scale-100 text-[#014F86]'
               }`}>
-                {Math.min(8, Math.round((summary?.waterConsumedMl || 0) / 250))} <span className="text-lg font-bold text-slate-500">/ 8</span>
+                {Math.min(8, Math.round(((summary?.waterConsumedMl as number) || 0) / 250))} <span className="text-lg font-bold text-slate-500">/ 8</span>
               </p>
               <p className="text-xs text-slate-550 font-bold mt-1">Goal: 8 Glasses</p>
             </div>
@@ -875,7 +877,7 @@ const Home: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {todayMeals.map((meal: any) => (
+              {todayMeals.map((meal: any /* replaced by type later */) => (
                 <div key={meal.id} className="p-4 bg-white/40 border border-white/30 shadow-sm rounded-2xl flex items-center justify-between gap-4 transition-all hover:bg-white/60">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-primary-100/50 border border-primary-200/50 flex items-center justify-center font-bold text-primary-650 text-xs uppercase">
