@@ -200,7 +200,7 @@ const Admin: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button
-                        onClick={() => handleDeleteUser(u.id)}
+                        onClick={() => u.id && handleDeleteUser(u.id)}
                         className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
                       >
                         <Trash2 size={16} />

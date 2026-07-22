@@ -13,7 +13,7 @@ const ExerciseTracker: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState('');
   const [submitSpring, setSubmitSpring] = useState(false);
-  const [newEntryId, setNewEntryId] = useState<number | null>(null);
+  const [newEntryId, setNewEntryId] = useState<string | null>(null);
 
   // Auto-estimate MET calories
   const estimates: Record<string, number> = {
@@ -231,7 +231,7 @@ const ExerciseTracker: React.FC = () => {
                         <div>
                           <h4 className="font-bold text-sm text-slate-850 uppercase tracking-wide">{item.exerciseType}</h4>
                           <p className="text-xs text-slate-500 font-bold mt-0.5">
-                            {item.durationMinutes} minutes {item.distanceKm > 0 && `• ${item.distanceKm} km`}
+                            {item.durationMinutes} minutes {(item.distanceKm ?? 0) > 0 && `• ${item.distanceKm} km`}
                           </p>
                         </div>
                       </div>
@@ -243,7 +243,7 @@ const ExerciseTracker: React.FC = () => {
                           }`}>-{item.caloriesBurned} kcal</p>
                         </div>
                         <button
-                          onClick={() => handleDelete(item.id)}
+                          onClick={() => item.id && handleDelete(item.id)}
                           className="p-2 text-slate-550 hover:text-primary-650 hover:bg-primary-50/50 rounded-xl transition"
                         >
                           <Trash2 size={16} />

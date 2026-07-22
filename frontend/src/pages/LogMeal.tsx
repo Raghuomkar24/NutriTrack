@@ -151,10 +151,10 @@ const LogMeal: React.FC = () => {
     ]);
   };
 
-  const handleUpdateQuantity = (foodId: number, qty: number, unit?: string, multiplier?: number) => {
+  const handleUpdateQuantity = (foodId: string, qty: number, unit?: string, multiplier?: number) => {
     setSelectedItems(prev =>
       prev.map(item => {
-        if (String(item.id) === String(foodId)) {
+        if (item.id === foodId) {
           return { 
             ...item, 
             quantity: Math.max(0.1, qty), 
@@ -167,7 +167,7 @@ const LogMeal: React.FC = () => {
     );
   };
 
-  const handleRemoveItem = (foodId: number) => {
+  const handleRemoveItem = (foodId: string) => {
     setSelectedItems(prev => prev.filter(item => item.id !== foodId));
   };
 
@@ -740,7 +740,7 @@ const LogMeal: React.FC = () => {
                                 <span className="text-[10px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full">F {Math.round(meal.totalFat)}g</span>
                               </div>
                               <p className="text-[9px] text-slate-400 mt-1 font-medium">
-                                {new Date(meal.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                {meal.createdAt ? new Date(meal.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''}
                               </p>
                             </div>
                             {/* Delete button */}

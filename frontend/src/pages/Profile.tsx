@@ -6,7 +6,7 @@ import PopUpModal, { PopUpType } from '@/components/PopUpModal';
 import { RotateCcw, Camera } from 'lucide-react';
 
 const Profile: React.FC = () => {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);

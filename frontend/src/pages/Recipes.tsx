@@ -46,7 +46,7 @@ interface GroceryItem {
 }
 
 function compileGroceryList(recipes: Recipe[], selectedIds: string[]): Record<Category, GroceryItem[]> {
-  const selected = recipes.filter(r => selectedIds.includes(r.id));
+  const selected = recipes.filter(r => r.id && selectedIds.includes(r.id));
   const map: Record<string, { amountG: number; category: Category }> = {};
 
   selected.forEach(recipe => {
@@ -345,8 +345,8 @@ const Recipes: React.FC = () => {
                 </div>
                 {/* Category chips */}
                 <div className="absolute bottom-2 left-2 flex gap-1">
-                  {[...new Set((recipe.recipeIngredients || []).map((ing: RecipeIngredient) => classifyIngredient((typeof ing.ingredient === 'string' ? ing.ingredient : ing.ingredient?.name) || '')))].slice(0,2).map((cat) => {
-                    const c = CATEGORY_COLORS[cat as Category];
+                  {([...new Set((recipe.recipeIngredients || []).map((ing: RecipeIngredient) => classifyIngredient((typeof ing.ingredient === 'string' ? ing.ingredient : ing.ingredient?.name) || '')))] as Category[]).slice(0,2).map((cat) => {
+                    const c = CATEGORY_COLORS[cat];
                     return (
                       <span key={cat} className={`text-[9px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${c.chip}`}>{cat}</span>
                     );

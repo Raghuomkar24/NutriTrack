@@ -505,7 +505,7 @@ const Home: React.FC = () => {
                   : `You are over your budget by ${Math.round(Math.abs(caloriesRemaining))} kcal. `}
             </p>
             <p className="text-sm text-slate-600 mt-2 leading-relaxed font-semibold">
-              {summary?.waterConsumedMl >= (summary?.waterGoal || 2500) 
+              {(summary?.waterConsumedMl ?? 0) >= (summary?.waterGoal || 2500) 
                 ? "Hydration goal met! 💧 " 
                 : `Drink ${Math.max(0, (summary?.waterGoal || 2500) - ((summary?.waterConsumedMl as number) || 0))} ml more to hit your water goal. `}
               {caloriesBurned > 0 ? `You've burned ${caloriesBurned} kcal through exercise today! 🏃‍♂️` : "No exercise logged yet."}
