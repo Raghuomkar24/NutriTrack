@@ -2,20 +2,13 @@ version: '3.8'
 
 services:
   db:
-    image: mysql:8.0
+    image: mongo:latest
     container_name: nutritrack_db
     restart: always
-    environment:
-      MYSQL_DATABASE: nutritrack_db
-      MYSQL_ROOT_PASSWORD: password
     ports:
-      - "3306:3306"
+      - "27017:27017"
     volumes:
-      - db_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
-      timeout: 5s
-      retries: 5
+      - mongo_data:/data/db
 
   backend:
     build: ./backend
@@ -24,14 +17,12 @@ services:
     ports:
       - "8085:8085"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/nutritrack_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=password
-      - JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
-      - OPENAI_API_KEY=mock-key
+      - PORT=8085
+      - MONGO_URI=mongodb://db:27017/nutritrack
+      - JWT_SECRET=supersecretkeythatyoushouldchangeinproduction
+      - GEMINI_API_KEY=$GEMINI_API_KEY
     depends_on:
-      db:
-        condition: service_healthy
+      - db
 
   frontend:
     build: ./frontend
@@ -43,4 +34,4 @@ services:
       - backend
 
 volumes:
-  db_data:
+  mongo_data:
